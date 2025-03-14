@@ -8,7 +8,7 @@
     <div class="flex flex-col gap-4">
       <h2 class="text-[#656565]">Правила платформы</h2>
       <div class="flex flex-col gap-2">
-        <p class="text-xl">Основные принципы работы:</p>
+        <p class="text-xl font-semibold">Основные принципы работы:</p>
         <ul class="flex flex-col gap-2 pl-4">
           <li>Платформа создана для честного и прозрачного сотрудничества.</li>
           <li>Все пользователи обязаны соблюдать законы и правила сервиса.</li>
@@ -16,7 +16,7 @@
         </ul>
       </div>
       <div class="flex flex-col gap-2">
-        <p class="text-xl">Обязанности пользователей:</p>
+        <p class="text-xl font-semibold">Обязанности пользователей:</p>
         <ul class="flex flex-col gap-2 pl-4">
           <li>Заказчики обязаны своевременно оплачивать выполненную работу.</li>
           <li>Фрилансеры должны выполнять заказы качественно и в срок.</li>
@@ -24,7 +24,7 @@
         </ul>
       </div>
       <div class="flex flex-col gap-2">
-        <p class="text-xl">Запрещенные действия:</p>
+        <p class="text-xl font-semibold">Запрещенные действия:</p>
         <ul class="flex flex-col gap-2 pl-4">
           <li>Обман и мошенничество (фальшивые заказы, ложные отзывы).</li>
           <li>Обход системы (предложение оплаты вне платформы).</li>

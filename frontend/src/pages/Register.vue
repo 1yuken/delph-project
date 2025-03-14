@@ -36,7 +36,6 @@ const register = async () => {
       }
     );
 
-    // Если регистрация прошла успешно, перенаправляем пользователя на страницу входа
     router.push('/login');
   } catch (err) {
     if (err.response && err.response.data && err.response.data.message) {
@@ -97,7 +96,6 @@ const register = async () => {
         >
           Зарегистрироваться
         </button>
-        <!-- Вывод ошибки, если она возникла -->
         <p v-if="error" class="mt-2 text-red-500 text-sm text-center">
           {{ error }}
         </p>

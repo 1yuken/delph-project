@@ -1,12 +1,16 @@
 <script setup>
 import HeaderComponent from './components/HeaderComponent.vue'
-import FooterComponent from './components/FooterComponent.vue';
+import FooterComponent from './components/FooterComponent.vue'
 </script>
 
 <template>
-  <HeaderComponent />
-  <RouterView />
-  <FooterComponent/>
+  <div class="min-h-screen flex flex-col">
+    <HeaderComponent />
+    <main class="flex-grow">
+      <RouterView />
+    </main>
+    <FooterComponent />
+  </div>
 </template>
 
 <style scoped></style>

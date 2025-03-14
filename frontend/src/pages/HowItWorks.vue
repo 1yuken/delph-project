@@ -31,21 +31,29 @@ const freelancers = ref([
     <div class="flex flex-col gap-4">
       <h2 class="text-[#656565]">Как это работает</h2>
       <div class="flex flex-col gap-2">
-        <p class="text-xl">Для заказчиков:</p>
+        <p class="text-xl font-semibold">Для заказчиков:</p>
         <ul class="flex gap-1" v-for="customer in customers" :key="customer.id">
           {{
             customer.id
           }}.
-          <li>{{ customer.text }}</li>
+          <li class="text-[#222222]">{{ customer.text }}</li>
         </ul>
       </div>
       <div class="flex flex-col gap-2">
-        <p class="text-xl">Для фрилансеров:</p>
+        <p class="text-xl font-semibold">Для фрилансеров:</p>
         <ul class="flex gap-1" v-for="freelancer in freelancers" :key="freelancer.id">
           {{
             freelancer.id
           }}.
           <li>{{ freelancer.text }}</li>
+        </ul>
+      </div>
+      <div class="bg-[#F9F9F9] p-4 rounded-lg">
+        <h3 class="text-lg font-bold mb-2">Советы по успешному использованию платформы</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Пишите подробные описания заказов или профилей, чтобы избежать недопонимания.</li>
+          <li>Обращайте внимание на отзывы и рейтинг при выборе партнёров.</li>
+          <li>В случае вопросов или спорных ситуаций, сразу обращайтесь в службу поддержки.</li>
         </ul>
       </div>
     </div>
