@@ -145,7 +145,7 @@ router.afterEach(() => {
             Как это работает
           </RouterLink>
           <RouterLink to='/guarantees' class="block w-full text-sm text-left px-4 py-2 text-[#656565] hover:bg-gray-100 transition hover:text-black cursor-pointer">
-            Гарантии
+            Гарантии и FAQ
           </RouterLink>
           <RouterLink to='/rules' class="block w-full text-sm text-left px-4 py-2 text-[#656565] hover:bg-gray-100 hover:rounded-b-lg transition hover:text-black cursor-pointer">
             Правила

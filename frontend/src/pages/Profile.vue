@@ -1,119 +1,92 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-// import EditIcon from '@/icons/EditIcon.vue';
-import StarIcon from '@/icons/StarIcon.vue';
 import { ref } from 'vue'
+import ProfileAvatar from '@/components/ProfileAvatar.vue'
+import ProfileInfo from '@/components/ProfileInfo.vue'
+import SkillsList from '@/components/SkillsList.vue'
+import PortfolioGallery from '@/components/PortfolioGallery.vue'
+import ReviewList from '@/components/ReviewList.vue'
 
 const fullName = ref('yuken')
+
+const description =
+  ref(`Я — опытный фронтенд-разработчик, страстно увлечённый созданием интуитивно понятных и
+            высокопроизводительных веб-интерфейсов, которые не только решают бизнес-задачи, но и
+            делают пользовательский опыт незабываемым. Мой крепкий технический бэкграунд и глубокое
+            знание Vue.js и смежных технологий позволяют мне разрабатывать решения, где оптимальное
+            сочетание производительности, качества кода и удобства поддержки становится нормой. 
+            Я постоянно изучаю актуальные тренды в UI/UX, интеграции API и тестировании, что
+            помогает мне создавать масштабируемые и легко адаптируемые продукты. Готов к новым
+            профессиональным вызовам и с энтузиазмом жду возможности внести свой вклад в развитие
+            амбициозных проектов.
+            
+            Связаться со мной можно в Telegram: @yuken1`)
+
+const skills = ref([
+  { name: 'Vue' },
+  { name: 'JavaScript' },
+  { name: 'Vite' },
+  { name: 'Nuxt.js' },
+  { name: 'TypeScript' },
+  { name: 'SCSS' },
+  { name: 'Docker' },
+])
+
+const projects = ref([
+  { id: 1, title: 'Вёрстка', image: '/public/random.jpg', views: 123 },
+  { id: 2, title: 'Создание сайта', image: '/public/random2.jpg', views: 123 },
+  { id: 3, title: 'Создание сайта', image: '/public/portfolio.png', views: 123 },
+])
+
+const reviews = ref([
+  {
+    id: 1,
+    name: 'yuken',
+    order: 'Заказ #G6TXYXGE',
+    date: '23 февраля 2023',
+    rating: 5,
+    project: 'React, 4000 руб',
+    comment: 'Все отлично, отзывчивый продавец',
+  },
+  {
+    id: 2,
+    name: 'yuken',
+    order: 'Заказ #G6TXYXGE',
+    date: '23 февраля 2023',
+    rating: 4,
+    project: 'React, 4000 руб',
+    comment: 'Все отлично, отзывчивый продавец',
+  },
+  {
+    id: 2,
+    name: 'yuken',
+    order: 'Заказ #G6TXYXGE',
+    date: '23 февраля 2023',
+    rating: 5,
+    project: 'React, 4000 руб',
+    comment: 'Все отлично, отзывчивый продавец',
+  },
+])
 </script>
 
 <template>
-  <div class="relative flex items-center w-3/5 m-auto py-5 gap-4">
-    <div>
+  <div class="relative flex flex-col w-3/5 m-auto py-5 gap-4">
+    <div class="flex gap-8">
+      <ProfileAvatar :fullName="fullName" />
+      <ProfileInfo :description="description" />
       <div>
-        <div class="relative inline-block">
-          <img
-            class="rounded-full block"
-            src="/public/avatar-full.jpg"
-            width="170"
-            height="170"
-            alt="avatar"
-          />
-          <img
-            class="absolute top-0 right-0 bg-[#0A65CC] p-2 rounded-full cursor-pointer transition hover:bg-[#085BBA]"
-            src="/public/edit-small.png"
-            alt="edit avatar button"
-          />
-        </div>
-        <h1 class="text-3xl font-bold text-[#222222] mt-4">{{ fullName }}</h1>
-        <div class="mt-2">
-          <p class="text-[#656565] text-sm mb-1">Дата регистрации</p>
-          <p class="text-sm">23 февраля 2020, 0:04</p>
-          <p class="text-sm">5 лет назад</p>
-        </div>
-      </div>
-      <div class="mt-12">
-        <h3 class="text-[#656565] text-sm mb-2">Отзывы</h3>
-        <div class="flex flex-col gap-2 border border-[#C9C9C9] p-6">
-          <p class="text-sm text-[#222222]">Рейтинг продавца</p>
-          <span class="font-bold text-[#222222]"><span class="text-5xl">?</span> из 5</span>
-          <div class="flex items-center mt-4 gap-4 border-t border-[#C9C9C9] pt-6">
-            <img
-              class="rounded-full"
-              src="/public/avatar-full.jpg"
-              width="40px"
-              height="40px"
-              alt="#"
-            />
-            <div>
-              <div>
-                <div class="flex gap-2">
-                  <p class="text-sm font-bold">yuken</p>
-                  <a href="#" class="text-sm text-[#0A65CC] font-bold hover:text-[#0A65CC]/80 hover:underline">Заказ #G6TXYXGE</a>
-                  <p class="text-sm">23 февраля 2023 в 0:04, 2 года назад</p>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                </div>
-                <p class="text-sm text-[#a6a6a6] font-bold">React, 4000 руб</p>
-              </div>
-              <p class="text-sm mt-2">Все отлично, отзывчивый продавец</p>
-            </div>
-          </div>
-          <div class="flex items-center mt-4 gap-4 border-t border-[#C9C9C9] pt-6">
-            <img
-              class="rounded-full"
-              src="/public/avatar-full.jpg"
-              width="40px"
-              height="40px"
-              alt="#"
-            />
-            <div>
-              <div>
-                <div class="flex gap-2">
-                  <p class="text-sm font-bold">yuken</p>
-                  <a href="#" class="text-sm text-[#0A65CC] font-bold hover:text-[#0A65CC]/80 hover:underline">Заказ #G6TXYXGE</a>
-                  <p class="text-sm">23 февраля 2023 в 0:04, 2 года назад</p>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                </div>
-                <p class="text-sm text-[#a6a6a6] font-bold">React, 4000 руб</p>
-              </div>
-              <p class="text-sm mt-2">Все отлично, отзывчивый продавец</p>
-            </div>
-          </div>
-          <div class="flex items-center mt-4 gap-4 border-t border-[#C9C9C9] pt-6">
-            <img
-              class="rounded-full"
-              src="/public/avatar-full.jpg"
-              width="40px"
-              height="40px"
-              alt="#"
-            />
-            <div>
-              <div>
-                <div class="flex gap-2">
-                  <p class="text-sm font-bold">yuken</p>
-                  <a href="#" class="text-sm text-[#0A65CC] font-bold hover:text-[#0A65CC]/80 hover:underline">Заказ #G6TXYXGE</a>
-                  <p class="text-sm">23 февраля 2023 в 0:04, 2 года назад</p>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                  <StarIcon/>
-                </div>
-                <p class="text-sm text-[#a6a6a6] font-bold">React, 4000 руб</p>
-              </div>
-              <p class="text-sm mt-2">Все отлично, отзывчивый продавец</p>
-            </div>
-          </div>
-        </div>
+        <button
+          class="px-4 py-2 text-sm rounded-md font-semibold bg-[#0A65CC] text-white transition hover:bg-[#085BBA] cursor-pointer"
+        >
+          Отправить сообщение
+        </button>
+        <p class="text-sm text-[#656565] mt-4">324 заказов выполнено</p>
+        <p class="text-sm text-[#656565] mt-1">11 отзывов получено</p>
+        <p class="text-sm text-[#656565] mt-1">100% заказов успешно сдано</p>
       </div>
     </div>
+    <SkillsList :skills="skills" />
+    <PortfolioGallery :projects="projects" />
+    <ReviewList :reviews="reviews" />
   </div>
 </template>
-
-<style scoped></style>
