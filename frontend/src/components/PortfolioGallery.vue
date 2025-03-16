@@ -2,14 +2,17 @@
 import ViewIcon from '@/icons/ViewIcon.vue'
 
 defineProps({
-  projects: Array,
+  projects: {
+    type: Array,
+    default: () => [],
+  },
 })
 </script>
 
 <template>
   <div>
     <h2 class="text-xl font-bold text-[#222222] mt-4">Портфолио</h2>
-    <div class="flex flex-wrap gap-4 mt-2">
+    <div v-if="projects.length" class="flex flex-wrap gap-4 mt-2">
       <div
         v-for="project in projects"
         :key="project.id"
@@ -26,5 +29,6 @@ defineProps({
         </div>
       </div>
     </div>
+    <div v-else class="mt-4 text-gray-500 text-center">Проектов не добавлено :(</div>
   </div>
 </template>

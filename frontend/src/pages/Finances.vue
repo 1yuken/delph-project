@@ -92,37 +92,42 @@ const formattedFinances = computed(() => formatAmount(countFinances.value))
 </script>
 
 <template>
-    <div class="relative flex flex-col items-center w-3/5 mx-auto py-5 gap-4">
-      <div class="w-full">
-        <h1 class="text-3xl font-bold text-[#222222]">
-          Финансы
-          <span class="text-2xl"> • {{ formattedFinances }}</span>
-        </h1>
-        <div class="flex flex-wrap justify-between items-center gap-4 my-4">
-          <OperationsFilter v-model="selectedFilter" />
-          <button
-            type="button"
-            class="bg-blue-600 text-sm text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Вывести деньги
-          </button>
-        </div>
-  
-        <OperationsTable
-          :operations="filteredOperations"
-          :formatAmount="formatAmount"
-          @select="selectedOperation = $event"
-        />
+  <div class="relative flex flex-col items-center w-3/5 mx-auto py-5 gap-4">
+    <div class="w-full">
+      <h1 class="text-3xl font-bold text-[#222222]">
+        Финансы
+        <span class="text-2xl"> • {{ formattedFinances }}</span>
+      </h1>
+      <div class="flex flex-wrap justify-between items-center gap-4 my-4">
+        <OperationsFilter v-model="selectedFilter" />
+        <button
+          type="button"
+          class="bg-blue-600 text-sm text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Вывести деньги
+        </button>
       </div>
-  
-      <OperationModal
-        v-if="selectedOperation"
-        :operation="selectedOperation"
+
+      <!-- Если операций нет, отображаем сообщение -->
+      <div v-if="filteredOperations.length === 0" class="text-center py-10 text-gray-500">
+        <p>У вас пока нет операций :(</p>
+      </div>
+      <!-- Иначе, отображаем таблицу операций -->
+      <OperationsTable
+        v-else
+        :operations="filteredOperations"
         :formatAmount="formatAmount"
-        @close="selectedOperation = null"
+        @select="selectedOperation = $event"
       />
     </div>
-  </template>
 
-<style scoped>
-</style>
+    <OperationModal
+      v-if="selectedOperation"
+      :operation="selectedOperation"
+      :formatAmount="formatAmount"
+      @close="selectedOperation = null"
+    />
+  </div>
+</template>
+
+<style scoped></style>
