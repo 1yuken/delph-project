@@ -1,37 +1,26 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
+const router = useRouter()
+
 const item = ref(null)
-const selectedLink = ref('Все') // Выбранная категория
-const orders = ref([]) // Список заказов
+const selectedLink = ref('Все')
+const orders = ref([])
 
 onMounted(async () => {
   try {
-    const { data } = await axios.get(`https://51ee8a820928c63e.mokky.dev/items/${route.params.id}`)
-    item.value = data
-    orders.value = [
-      {
-        description: 'Дизайн логотипа для студии арта и анимации в игровой индустрии',
-        customer: 'yuken',
-        price: 'договорная',
-        avatar: 'https://i.pravatar.cc/40?img=1',
-      },
-      {
-        description: 'Разработка лендинга на React + Tailwind',
-        customer: 'alex_dev',
-        price: '$500',
-        avatar: 'https://i.pravatar.cc/40?img=2',
-      },
-      {
-        description: 'Создание анимации для мобильного приложения',
-        customer: 'motion_art',
-        price: '$300',
-        avatar: 'https://i.pravatar.cc/40?img=3',
-      },
-    ]
+    const { data: itemData } = await axios.get(
+      `https://51ee8a820928c63e.mokky.dev/items/${route.params.id}`,
+    )
+    item.value = itemData
+
+    const { data: ordersData } = await axios.get(
+      `https://51ee8a820928c63e.mokky.dev/orders?categoryId=${route.params.id}`,
+    )
+    orders.value = ordersData
   } catch (error) {
     console.error('Ошибка загрузки элемента:', error)
   }
@@ -39,6 +28,10 @@ onMounted(async () => {
 
 const selectLink = (link) => {
   selectedLink.value = link
+}
+
+const goToOrderDetail = (orderId) => {
+  router.push(`/order/${orderId}`)
 }
 </script>
 
@@ -93,8 +86,9 @@ const selectLink = (link) => {
         </thead>
         <tbody>
           <tr
-            v-for="(order, index) in orders"
-            :key="index"
+            v-for="order in orders"
+            :key="order.id"
+            @click="goToOrderDetail(order.id)"
             class="border-b border-[#C9C9C9] cursor-pointer transition hover:bg-[#f9f9f9]"
           >
             <td class="py-3 px-4">{{ order.description }}</td>

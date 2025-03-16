@@ -11,6 +11,8 @@ import Rules from '../pages/Rules.vue'
 import Settings from '@/pages/Settings.vue'
 import Profile from '@/pages/Profile.vue'
 import Specialists from '@/pages/Specialists.vue'
+import Order from '@/pages/Order.vue'
+import OrderDetail from '@/components/OrderDetail.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -25,6 +27,8 @@ const routes = [
   { path: '/profile', component: Profile },
   { path: '/specialists', component: Specialists },
   { path: '/item/:id', component: ItemDetail, props: true },
+  { path: '/', component: Order },
+  { path: '/order/:id', component: OrderDetail, props: true},
 ]
 
 const router = createRouter({

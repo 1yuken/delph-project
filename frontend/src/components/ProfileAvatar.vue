@@ -14,11 +14,11 @@ defineProps({
         height="170"
         alt="avatar"
       />
-      <img
+      <!-- <img
         class="absolute top-0 right-0 bg-[#0A65CC] p-2 rounded-full cursor-pointer transition hover:bg-[#085BBA]"
         src="/public/edit-small.png"
         alt="edit avatar button"
-      />
+      /> -->
     </div>
     <h1 class="text-3xl font-bold text-[#222222] mt-4">{{ fullName }}</h1>
     <div class="mt-2">
