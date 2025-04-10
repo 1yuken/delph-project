@@ -4,11 +4,8 @@ services:
     restart: always
     environment:
       - POSTGRES_PASSWORD=root
-    container_name: postgres
-    volumes:
-      - var/lib/postgresql/data
     ports:
-      - '5432:5432'
+      - 5432:5432
 
   app:
     build:
