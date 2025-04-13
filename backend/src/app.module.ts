@@ -14,6 +14,7 @@ import { join } from 'path';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
+      // host: 'db',
       port: 5432,
       username: 'root',
       password: 'root',

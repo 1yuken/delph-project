@@ -2,13 +2,7 @@ import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
-import {
-  ApiBearerAuth,
-  ApiTags,
-  ApiOperation,
-  ApiBody,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './auth/dto/login.dto';
 
 @ApiTags('Auth')
@@ -16,14 +10,13 @@ import { LoginDto } from './auth/dto/login.dto';
 export class AppController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ summary: 'User login' })
   @ApiBody({
     type: LoginDto,
     examples: {
       default: {
         value: {
-          username: 'testuser',
-          password: 'testpassword',
+          username: 'John Doe',
+          password: 'password123',
         },
       },
     },
@@ -44,17 +37,6 @@ export class AppController {
     return this.authService.login(req.user);
   }
 
-  @ApiOperation({ summary: 'User logout' })
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Logout successful' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @UseGuards(JwtAuthGuard)
-  @Post('auth/logout')
-  async logout(@Request() req) {
-    return req.logout();
-  }
-
-  @ApiOperation({ summary: 'Get user profile' })
   @ApiBearerAuth()
   @ApiResponse({
     status: 200,
@@ -62,7 +44,7 @@ export class AppController {
     schema: {
       example: {
         userId: 1,
-        username: 'testuser',
+        username: 'John Doe',
         isFreelancer: true,
       },
     },
