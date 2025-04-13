@@ -8,8 +8,8 @@ async function bootstrap() {
   const options = new DocumentBuilder()
     .setTitle('Delph API')
     .setDescription('Freelance job platform')
+    .addBearerAuth()
     .build();
-
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
 
