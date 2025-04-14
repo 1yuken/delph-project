@@ -78,7 +78,7 @@ onUnmounted(() => {
 
 <template>
   <div class="py-4">
-    <div class="w-3/5 m-auto flex gap-11.5">
+    <div class="w-3/5 m-auto flex gap-11.5 max-xl:w-4/5 max-lg:w-5/5 max-lg:px-4">
       <aside v-auto-animate class="text-[#656565] text-xs flex flex-col gap-2 max-w-[70px] w-full h-screen sticky top-20">
         <span 
           v-for="letter in Object.keys(groupedItems)" 

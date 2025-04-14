@@ -9,7 +9,7 @@ defineProps({
 <template>
   <div class="mt-12">
     <h3 class="text-xl font-bold text-[#222222] mb-2">Отзывы</h3>
-    <div class="inline-flex max-w-[600px] w-full flex-col gap-2 border border-[#C9C9C9] p-6">
+    <div class="inline-flex max-w-[600px] w-full flex-col gap-2 border border-[#C9C9C9] p-6 max-sm:p-4">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-[#222222]">Рейтинг продавца</p>

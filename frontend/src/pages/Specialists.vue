@@ -44,7 +44,7 @@ const sortedSpecialists = computed(() => {
 </script>
 
 <template>
-  <div class="relative flex items-center w-3/5 m-auto py-5 gap-4">
+  <div class="relative flex items-center w-3/5 m-auto py-5 gap-4 max-xl:w-4/5 max-lg:w-5/5 max-lg:px-4">
     <div class="flex flex-col w-full">
       <h1 class="text-3xl font-bold text-[#222222] mb-4">Специалисты</h1>
       <div class="mb-2">
