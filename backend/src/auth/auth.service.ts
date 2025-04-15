@@ -14,7 +14,7 @@ export class AuthService {
     const user = await this.usersService.findOneByUsername(username);
 
     if (!user) {
-      console.log('User not found');
+      console.error('User not found');
       return null;
     }
 
@@ -37,5 +37,41 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async changePassword(
+    user: any,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    // Получаем пользователя из базы данных
+    const userFromDb = await this.usersService.findOneByUsername(user.username);
+    if (!userFromDb) {
+      throw new Error('User not found');
+    }
+
+    // Проверяем текущий пароль
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      userFromDb.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new Error('Current password is incorrect');
+    }
+
+    if (newPassword === currentPassword) {
+      throw new Error(
+        'New password must be different from the current password',
+      );
+    }
+    // Хешируем новый пароль
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Используем существующий update-user.dto для обновления пароля
+    const updateUserDto = { password: hashedPassword };
+    await this.usersService.update(userFromDb.id, updateUserDto);
+
+    return { success: true, message: 'Password successfully changed' };
   }
 }
