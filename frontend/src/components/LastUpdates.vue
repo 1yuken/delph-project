@@ -19,7 +19,7 @@ onMounted(fetchRecentItems)
 
 <template>
   <div class="bg-[#F9F9F9] py-4">
-    <div class="w-3/5 m-auto flex gap-11.5">
+    <div class="w-3/5 m-auto flex gap-11.5 max-xl:w-4/5 max-lg:w-5/5 max-lg:px-4 max-md:gap-8">
       <article class="max-w-[70px] w-full">
         <p class="text-[#656565] text-xs">Последние<br />обновления</p>
       </article>

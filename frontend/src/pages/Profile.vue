@@ -70,8 +70,8 @@ const reviews = ref([
 </script>
 
 <template>
-  <div class="relative flex flex-col w-3/5 m-auto py-5 gap-4">
-    <div class="flex gap-8">
+  <div class="relative flex flex-col w-3/5 m-auto py-5 gap-4 max-xl:w-4/5 max-lg:w-5/5 max-lg:px-4">
+    <div class="flex gap-8 max-lg:flex-col">
       <ProfileAvatar :fullName="fullName" />
       <ProfileInfo :description="description" />
       <div>

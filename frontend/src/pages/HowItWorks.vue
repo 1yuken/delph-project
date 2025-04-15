@@ -27,7 +27,7 @@ const freelancers = ref([
 </script>
 
 <template>
-  <div class="relative flex items-center w-3/5 m-auto py-5 gap-4">
+  <div class="relative flex items-center w-3/5 m-auto py-5 gap-4 max-xl:w-4/5 max-lg:w-5/5 max-lg:px-4">
     <div class="flex flex-col gap-4">
       <h2 class="text-[#656565]">Как это работает</h2>
       <div class="flex flex-col gap-2">

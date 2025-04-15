@@ -92,9 +92,9 @@ const formattedFinances = computed(() => formatAmount(countFinances.value))
 </script>
 
 <template>
-  <div class="relative flex flex-col items-center w-3/5 mx-auto py-5 gap-4">
+  <div class="relative flex flex-col items-center w-3/5 mx-auto py-5 gap-4 max-xl:w-4/5 max-lg:w-5/5 max-lg:px-4">
     <div class="w-full">
-      <h1 class="text-3xl font-bold text-[#222222]">
+      <h1 class="text-3xl font-bold text-[#222222] max-sm:text-2xl">
         Финансы
         <span class="text-2xl"> • {{ formattedFinances }}</span>
       </h1>

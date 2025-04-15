@@ -22,10 +22,10 @@ const register = async () => {
 
   try {
     const response = await axios.post(
-      "https://51ee8a820928c63e.mokky.dev/register",
+      "http://localhost:3000/users",
       {
-        fullName: fullName.value,
-        email: email.value,
+        // fullName: fullName.value,
+        username: email.value,
         password: password.value
       },
       {

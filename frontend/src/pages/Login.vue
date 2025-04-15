@@ -17,9 +17,9 @@ const login = async () => {
 
   try {
     const response = await axios.post(
-      "https://51ee8a820928c63e.mokky.dev/auth",
+      "http://localhost:3000/auth/login",
       {
-        email: email.value,
+        username: email.value,
         password: password.value
       },
       {
@@ -32,7 +32,7 @@ const login = async () => {
 
     // Проверяем структуру ответа и извлекаем нужные данные
     const userData = {
-      token: response.data.token,
+      token: response.data.access_token,
       name: response.data.user?.name || email.value,
       email: email.value
     };
