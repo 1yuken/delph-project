@@ -12,4 +12,17 @@ export class CreateUserDto {
 
   @ApiProperty({ description: 'Password of a user', example: 'password123' })
   password: string;
+
+  @ApiPropertyOptional({
+    description: 'User bio or description',
+    example:
+      'Experienced frontend developer passionate about creating intuitive interfaces',
+  })
+  bio?: string;
+
+  @ApiPropertyOptional({
+    description: 'Profile picture URL',
+    example: 'https://example.com/avatar.jpg',
+  })
+  avatarUrl?: string;
 }

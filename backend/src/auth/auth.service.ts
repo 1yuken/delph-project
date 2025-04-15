@@ -11,7 +11,8 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string) {
-    const user = await this.usersService.findOneByUsername(username);
+    const user =
+      await this.usersService.findOneByUsernameWithPassword(username);
 
     if (!user) {
       console.error('User not found');
@@ -45,7 +46,9 @@ export class AuthService {
     newPassword: string,
   ) {
     // Получаем пользователя из базы данных
-    const userFromDb = await this.usersService.findOneByUsername(user.username);
+    const userFromDb = await this.usersService.findOneByUsernameWithPassword(
+      user.username,
+    );
     if (!userFromDb) {
       throw new Error('User not found');
     }
@@ -73,5 +76,9 @@ export class AuthService {
     await this.usersService.update(userFromDb.id, updateUserDto);
 
     return { success: true, message: 'Password successfully changed' };
+  }
+
+  async getProfile(user: any) {
+    return this.usersService.findOneByUsername(user.username);
   }
 }

@@ -1,4 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
@@ -29,4 +34,30 @@ export class User {
   @Column({ default: true })
   @ApiProperty({ description: 'Is a user a freelancer', example: true })
   isFreelancer: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  @ApiPropertyOptional({
+    description: 'User bio or description',
+    example:
+      'Experienced frontend developer passionate about creating intuitive interfaces',
+  })
+  bio: string;
+
+  @Column({ nullable: true })
+  @ApiPropertyOptional({
+    description: 'Profile picture URL',
+    example: 'https://example.com/avatar.jpg',
+  })
+  avatarUrl: string;
+
+  // @Column({ type: 'simple-array', nullable: true })
+  // @ApiPropertyOptional({
+  //   description: 'User skills',
+  //   example: ['Vue', 'JavaScript', 'TypeScript', 'SCSS'],
+  // })
+  // skills: string[];
+
+  @CreateDateColumn()
+  @ApiProperty({ description: 'Registration date' })
+  registrationDate: Date;
 }
