@@ -35,7 +35,26 @@ export class UsersService {
   findOneByUsername(username: string) {
     return this.usersRepository.findOne({
       where: { username },
-      select: ['id', 'username', 'password', 'isFreelancer'],
+    });
+  }
+
+  findOneByEmail(email: string) {
+    return this.usersRepository.findOne({
+      where: { email },
+    });
+  }
+
+  findOneByUsernameWithPassword(username: string) {
+    return this.usersRepository.findOne({
+      where: { username },
+      select: ['id', 'email', 'username', 'password'],
+    });
+  }
+
+  findOneByEmailWithPassword(email: string) {
+    return this.usersRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'username', 'password'],
     });
   }
 
