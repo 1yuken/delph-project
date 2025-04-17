@@ -10,9 +10,14 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string) {
-    const user =
-      await this.usersService.findOneByUsernameWithPassword(username);
+  async validateUser(login: string, password: string) {
+    let user;
+    // Check if login is an email (contains @)
+    if (login.includes('@')) {
+      user = await this.usersService.findOneByEmailWithPassword(login);
+    } else {
+      user = await this.usersService.findOneByUsernameWithPassword(login);
+    }
 
     if (!user) {
       console.error('User not found');

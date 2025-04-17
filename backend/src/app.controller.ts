@@ -22,7 +22,13 @@ export class AppController {
     examples: {
       default: {
         value: {
-          username: 'John Doe',
+          login: 'John Doe',
+          password: 'password123',
+        },
+      },
+      withEmail: {
+        value: {
+          login: 'john.doe@example.com',
           password: 'password123',
         },
       },
