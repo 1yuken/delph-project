@@ -1,16 +1,4 @@
-там где название и потом ? это значит необязательное поле
-
-Пользователь (User)✅
-email?: string
-name: string
-about?: string
-registration: date
-skills: [] 
-reviews?: foreignKey(Review)❓
-role: (фрилансер или работодатель)
-porfolio?: [] ❓ foreignKey ?
-completed: int
-
+ЩАС КАРТИНКИ И СООБЩЕНИЯ
 
 Регистрация, аутентификация и авторизация(?) ✅
 смена пароля;✅
@@ -39,6 +27,19 @@ ad следующим нужно сделать, оно тоже не сложн
 Редактировать свой профиль - нужно добавить возможность
 
 
+там где название и потом ? это значит необязательное поле
+
+Пользователь (User)❓
+email?: string
+name: string
+about?: string
+registration: date
+skills: [] 
+reviews?: foreignKey(Review)❓
+role: (фрилансер или работодатель)
+porfolio?: [] ❓ foreignKey ?
+completed: int
+
 Сообщение (Message)
 sender: foreignKey(User)
 receiver: foreignKey(User)
@@ -46,15 +47,15 @@ msg: string (содержание, название поменяю)
 send_date: date with time
 возможность менять сообщение и удалять
 
-Отзыв (Review) ✅
+Отзыв (Review) ❓
 sender: foreignKey(User)
 receiver: foreignKey(User)
 msg: string
-job_id?: foreignKey(Ad)
+job_id?: foreignKey(Ad)❓
 rating: int (5 звезд или 4 звезды)
 
 Portfolio:
-просто картинки и текст и всё
+просто картинка и текст и всё
 
 Заказ (job)
 id: int
