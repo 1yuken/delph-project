@@ -1,16 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FileUploadService } from 'src/file-upload/file-upload.service';
+import { Express } from 'express';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
+    private readonly fileUploadService: FileUploadService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -64,5 +68,23 @@ export class UsersService {
 
   remove(id: string) {
     return this.usersRepository.delete(id);
+  }
+
+  async updateAvatar(username: string, file: Express.Multer.File) {
+    const userId = await this.findOneByUsername(username);
+
+    this.logger.log(
+      `Updating avatar for user ${userId.id} with file ${file.filename}`,
+    );
+
+    const avatarUrl = this.fileUploadService.getFileUrl(file.filename);
+
+    await this.usersRepository.update(userId.id, { avatarUrl });
+
+    return {
+      success: true,
+      avatarUrl,
+      message: 'Avatar successfully uploaded',
+    };
   }
 }

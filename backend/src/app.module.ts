@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import { join } from 'path';
 import { ReviewsModule } from './reviews/reviews.module';
 import { MessagesModule } from './messages/messages.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -23,6 +24,10 @@ import { MessagesModule } from './messages/messages.module';
       database: 'delph',
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       synchronize: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
     }),
     ReviewsModule,
     MessagesModule,
