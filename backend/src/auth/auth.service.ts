@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { use } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -12,10 +13,10 @@ export class AuthService {
 
   async validateUser(login: string, password: string) {
     let user;
-    // Check if login is an email (contains @)
-    if (login.includes('@')) {
-      user = await this.usersService.findOneByEmailWithPassword(login);
-    } else {
+    // Try to find by email first
+    user = await this.usersService.findOneByEmailWithPassword(login);
+    // If not found, try by email
+    if (!user) {
       user = await this.usersService.findOneByUsernameWithPassword(login);
     }
 
@@ -27,7 +28,7 @@ export class AuthService {
     try {
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
-      if (isPasswordValid) {
+      if (user && isPasswordValid) {
         const { password, ...result } = user;
         return result;
       }
@@ -39,9 +40,13 @@ export class AuthService {
   }
 
   login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+    const payload = { username: user.username, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        username: user.username,
+      },
     };
   }
 
@@ -77,8 +82,9 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Используем существующий update-user.dto для обновления пароля
-    const updateUserDto = { password: hashedPassword };
-    await this.usersService.update(userFromDb.id, updateUserDto);
+    await this.usersService.update(userFromDb.id, {
+      password: hashedPassword,
+    });
 
     return { success: true, message: 'Password successfully changed' };
   }

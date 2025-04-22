@@ -5,9 +5,14 @@ import { MessagesController } from './messages.controller';
 import { Message } from './entities/message.entity';
 import { Chat } from './entities/chat.entity';
 import { UsersModule } from 'src/users/users.module';
+import { FileUploadModule } from 'src/file-upload/file-upload.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message, Chat]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Message, Chat]),
+    UsersModule,
+    FileUploadModule,
+  ],
   controllers: [MessagesController],
   providers: [MessagesService],
   exports: [MessagesService],

@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from '../../users/entities/user.entity';
 
 @Entity()
@@ -21,6 +21,13 @@ export class Message {
     example: 'Hello, how are you?',
   })
   content: string;
+
+  @Column({ nullable: true })
+  @ApiPropertyOptional({
+    description: 'Message attachment',
+    example: 'http://localhost:3000/uploads/message-image-123.jpg',
+  })
+  imageUrl: string;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'senderId' })
