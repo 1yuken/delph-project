@@ -11,8 +11,8 @@
 reviews; ❓ (нужно добавить foreignKey на job_id когда сделаю сущность Ad)
 
 
-
 Добавить возможность получателю отзыва оставить ответ;
+
 
 
 Теперь можно делать профиль наверно? Для этого нужно добавить поля, name, about, registration, completed, role - легко, skills, reviews и portfolio - foreign keys на другие сущности.
