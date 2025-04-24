@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from './entities/message.entity';
@@ -8,7 +13,6 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 import { GetMessagesDto } from './dto/get-messages.dto';
 import { UsersService } from '../users/users.service';
 import { FileUploadService } from '../file-upload/file-upload.service';
-import { Express } from 'express';
 
 @Injectable()
 export class MessagesService {
@@ -253,11 +257,104 @@ export class MessagesService {
     return this.messagesRepository.findOne({ where: { id } });
   }
 
-  update(id: string, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
+  async update(id: string, updateMessageDto: UpdateMessageDto, userId: string) {
+    // Находим сообщение
+    const message = await this.messagesRepository.findOne({ where: { id } });
+
+    if (!message) {
+      throw new NotFoundException(`Message with ID ${id} not found`);
+    }
+
+    // Проверяем, что пользователь является отправителем сообщения
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('You can only update your own messages');
+    }
+
+    // Обновляем только контент сообщения
+    if (updateMessageDto.content !== undefined) {
+      message.content = updateMessageDto.content;
+    }
+
+    // Сохраняем обновленное сообщение
+    const updatedMessage = await this.messagesRepository.save(message);
+
+    // Если сообщение является последним в чате, обновляем превью чата
+    const [smallerId, largerId] =
+      message.senderId < message.receiverId
+        ? [message.senderId, message.receiverId]
+        : [message.receiverId, message.senderId];
+
+    const chat = await this.chatsRepository.findOne({
+      where: { user1Id: smallerId, user2Id: largerId },
+    });
+
+    if (chat && chat.lastMessageContent) {
+      // Проверяем, является ли это сообщение последним в чате
+      const latestMessage = await this.messagesRepository.findOne({
+        where: [
+          { senderId: smallerId, receiverId: largerId },
+          { senderId: largerId, receiverId: smallerId },
+        ],
+        order: { createdAt: 'DESC' },
+      });
+
+      if (latestMessage && latestMessage.id === id) {
+        chat.lastMessageContent = updateMessageDto.content || '';
+        await this.chatsRepository.save(chat);
+      }
+    }
+
+    return updatedMessage;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} message`;
+  async remove(id: string, userId: string) {
+    // Находим сообщение
+    const message = await this.messagesRepository.findOne({ where: { id } });
+
+    if (!message) {
+      throw new NotFoundException(`Message with ID ${id} not found`);
+    }
+
+    // Проверяем, что пользователь является отправителем сообщения
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('You can only delete your own messages');
+    }
+
+    // Сохраняем данные о сообщении перед удалением
+    const { senderId, receiverId } = message;
+
+    // Удаляем сообщение
+    await this.messagesRepository.remove(message);
+
+    // Обновляем чат, если удаленное сообщение было последним
+    const [smallerId, largerId] =
+      senderId < receiverId ? [senderId, receiverId] : [receiverId, senderId];
+
+    const chat = await this.chatsRepository.findOne({
+      where: { user1Id: smallerId, user2Id: largerId },
+    });
+
+    if (chat) {
+      // Находим новое последнее сообщение
+      const latestMessage = await this.messagesRepository.findOne({
+        where: [
+          { senderId: smallerId, receiverId: largerId },
+          { senderId: largerId, receiverId: smallerId },
+        ],
+        order: { createdAt: 'DESC' },
+      });
+
+      if (latestMessage) {
+        // Обновляем превью чата
+        chat.lastMessageContent = latestMessage.content || '📷 Image';
+        await this.chatsRepository.save(chat);
+      } else {
+        // Если сообщений больше нет, можно либо удалить чат, либо оставить с пометкой
+        chat.lastMessageContent = 'No messages';
+        await this.chatsRepository.save(chat);
+      }
+    }
+
+    return { success: true, message: `Message with ID ${id} has been deleted` };
   }
 }

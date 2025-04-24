@@ -48,7 +48,7 @@ export class MessagesController {
   })
   async create(@Request() req, @Body() createMessageDto: CreateMessageDto) {
     this.logger.log(
-      `Creating message from ${req.user} to ${createMessageDto.receiverId}`,
+      `Creating message from ${req.user.userId} to ${createMessageDto.receiverId}`,
     );
 
     return this.messagesService.create(req.user, createMessageDto);
@@ -152,12 +152,41 @@ export class MessagesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
-    return this.messagesService.update(id, updateMessageDto);
+  @ApiOperation({ summary: 'Update a message' })
+  @ApiParam({ name: 'id', description: 'Message ID' })
+  @ApiBody({
+    description: 'Message update data',
+    type: UpdateMessageDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The message has been successfully updated.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - can only update your own messages.',
+  })
+  @ApiResponse({ status: 404, description: 'Message not found.' })
+  update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateMessageDto: UpdateMessageDto,
+  ) {
+    this.logger.log(`Updating message ${id} by user ${req.user.userId}`);
+    return this.messagesService.update(id, updateMessageDto, req.user.userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.messagesService.remove(id);
+  @ApiOperation({ summary: 'Delete a message' })
+  @ApiParam({ name: 'id', description: 'Message ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The message has been successfully deleted.',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 404, description: 'Message not found.' })
+  remove(@Request() req, @Param('id') id: string) {
+    this.logger.log(`Deleting message ${id} by user ${req.user.userId}`);
+    return this.messagesService.remove(id, req.user.userId);
   }
 }

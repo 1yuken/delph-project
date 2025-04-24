@@ -13,6 +13,11 @@ reviews; ❓ (нужно добавить foreignKey на job_id когда сд
 
 Добавить возможность получателю отзыва оставить ответ;
 
+ШО NEXT?
+портфолио изи
+ответ вроде изи
+
+
 
 
 Теперь можно делать профиль наверно? Для этого нужно добавить поля, name, about, registration, completed, role - легко, skills, reviews и portfolio - foreign keys на другие сущности.
@@ -39,12 +44,12 @@ role: (фрилансер или работодатель)
 porfolio?: [] ❓ foreignKey ?
 completed: int
 
-Сообщение (Message) - сделать веб-сокет???
+Сообщение (Message) - сделать веб-сокет❓
 sender: foreignKey(User)
 receiver: foreignKey(User)
 msg: string (содержание, название поменяю)
 send_date: date with time
-возможность менять сообщение и удалять
+возможность менять сообщение и удалять✅
 
 Отзыв (Review) ❓
 sender: foreignKey(User)
@@ -52,7 +57,7 @@ receiver: foreignKey(User)
 msg: string
 job_id?: foreignKey(Ad)❓
 rating: int (5 звезд или 4 звезды)
-может здесь сделать поле Reply и это поле для ответа от того, кому оставили отзыв?
+может здесь сделать поле Reply и это поле для ответа от того, кому оставили отзыв?❓
 
 Portfolio:
 просто картинка и текст и всё
