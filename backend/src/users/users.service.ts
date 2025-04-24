@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FileUploadService } from 'src/file-upload/file-upload.service';
 import { Express } from 'express';
 import * as bcrypt from 'bcrypt';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,8 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly fileUploadService: FileUploadService,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -25,7 +28,15 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return this.usersRepository.save(newUser);
+    const savedUser = await this.usersRepository.save(newUser);
+
+    const { password, ...userWithoutPassword } = savedUser;
+    const token = await this.authService.login(userWithoutPassword);
+
+    return {
+      user: userWithoutPassword,
+      ...token,
+    };
   }
 
   findAll() {
