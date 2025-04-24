@@ -52,6 +52,7 @@ receiver: foreignKey(User)
 msg: string
 job_id?: foreignKey(Ad)❓
 rating: int (5 звезд или 4 звезды)
+может здесь сделать поле Reply и это поле для ответа от того, кому оставили отзыв?
 
 Portfolio:
 просто картинка и текст и всё
