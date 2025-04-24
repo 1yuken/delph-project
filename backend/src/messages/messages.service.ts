@@ -38,8 +38,8 @@ export class MessagesService {
       );
     }
 
-    if (sender.id === createMessageDto.receiverId) {
-      throw new Error('Cannot send message to yourself');
+    if (senderId.userId === Number.parseInt(createMessageDto.receiverId)) {
+      throw new ForbiddenException('Cannot send message to yourself');
     }
 
     // Create message - explicitly set isRead to false
@@ -79,8 +79,8 @@ export class MessagesService {
       );
     }
 
-    if (sender.id === messageData.receiverId) {
-      throw new Error('Cannot send message to yourself');
+    if (senderId.userId === Number.parseInt(messageData.receiverId)) {
+      throw new ForbiddenException('Cannot send message to yourself');
     }
 
     // Get image URL

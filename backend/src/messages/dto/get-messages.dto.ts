@@ -5,7 +5,7 @@ import { Type } from 'class-transformer';
 export class GetMessagesDto {
   @ApiPropertyOptional({
     description: 'User ID to get messages with',
-    example: '1',
+    example: 1,
   })
   @IsOptional()
   @IsString()

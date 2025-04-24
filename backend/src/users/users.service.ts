@@ -35,8 +35,8 @@ export class UsersService {
     const token = await this.authService.login(userWithoutPassword);
 
     return {
-      user: userWithoutPassword,
       ...token,
+      user: userWithoutPassword,
     };
   }
 

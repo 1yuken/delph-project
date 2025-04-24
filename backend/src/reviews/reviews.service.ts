@@ -20,7 +20,7 @@ export class ReviewsService {
 
   async create(user: any, createReviewDto: CreateReviewDto) {
     if (!user) {
-      throw new Error('User not found');
+      throw new ForbiddenException('User not found');
     }
 
     // Проверяем существование получателя

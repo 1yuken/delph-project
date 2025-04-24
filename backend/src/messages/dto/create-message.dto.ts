@@ -12,8 +12,9 @@ export class CreateMessageDto {
 
   @ApiProperty({
     description: 'Receiver user ID',
-    example: '1',
+    example: 1,
   })
+  @IsString()
   @IsNotEmpty()
   receiverId: string;
 }

@@ -1,8 +1,12 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { use } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -61,7 +65,7 @@ export class AuthService {
       user.username,
     );
     if (!userFromDb) {
-      throw new Error('User not found');
+      throw new ForbiddenException('User not found');
     }
 
     // Проверяем текущий пароль
@@ -71,11 +75,11 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new Error('Current password is incorrect');
+      throw new ForbiddenException('Current password is incorrect');
     }
 
     if (newPassword === currentPassword) {
-      throw new Error(
+      throw new ForbiddenException(
         'New password must be different from the current password',
       );
     }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, ForbiddenException } from '@nestjs/common';
 import { FileUploadService } from './file-upload.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -28,7 +28,10 @@ import { existsSync, mkdirSync } from 'fs';
       }),
       fileFilter: (req, file, callback) => {
         if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-          return callback(new Error('Only image files are allowed!'), false);
+          return callback(
+            new ForbiddenException('Only image files are allowed!'),
+            false,
+          );
         }
         callback(null, true);
       },

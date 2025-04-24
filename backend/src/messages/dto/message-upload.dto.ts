@@ -18,6 +18,7 @@ export class MessageUploadDto {
   @ApiProperty({
     type: 'string',
     description: 'Receiver user ID',
+    example: 1,
   })
   receiverId: string;
 }
