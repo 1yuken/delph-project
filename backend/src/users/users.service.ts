@@ -5,9 +5,9 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileUploadService } from 'src/file-upload/file-upload.service';
-import { Express } from 'express';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +16,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly fileUploadService: FileUploadService,
+    private readonly dataSource: DataSource,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
@@ -77,8 +78,47 @@ export class UsersService {
     return this.usersRepository.update(id, updateUserDto);
   }
 
-  remove(id: string) {
-    return this.usersRepository.delete(id);
+  async remove(id: string) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Удаляем все отзывы, где пользователь является отправителем или получателем
+      // Используем правильные имена полей из entity
+      await queryRunner.manager.query(
+        `DELETE FROM review WHERE sender_id = $1 OR receiver_id = $1`,
+        [id],
+      );
+
+      // Удаляем все сообщения, где пользователь является отправителем или получателем
+      await queryRunner.manager.query(
+        `DELETE FROM message WHERE "senderId" = $1 OR "receiverId" = $1`,
+        [id],
+      );
+
+      // Удаляем все чаты, где пользователь участвует
+      await queryRunner.manager.query(
+        `DELETE FROM chat WHERE "user1Id" = $1 OR "user2Id" = $1`,
+        [id],
+      );
+
+      // Здесь можно добавить удаление других связанных сущностей
+      // ...
+
+      // Наконец, удаляем самого пользователя
+      await queryRunner.manager.delete('user', { id });
+
+      // Если всё прошло успешно, фиксируем транзакцию
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      // В случае ошибки откатываем все изменения
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      // Освобождаем queryRunner
+      await queryRunner.release();
+    }
   }
 
   async updateAvatar(username: string, file: Express.Multer.File) {

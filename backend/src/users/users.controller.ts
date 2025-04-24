@@ -96,9 +96,20 @@ export class UsersController {
     return this.usersService.update(userId, filteredDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete current user account' })
+  @ApiResponse({
+    status: 200,
+    description: 'User account deleted successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  remove(@Request() req) {
+    return this.usersService.remove(req.user.userId);
   }
 
   @Post('upload-avatar')
