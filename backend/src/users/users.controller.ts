@@ -15,7 +15,13 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadDto } from './dto/file-upload.dto';
@@ -39,9 +45,55 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user profile ' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - email or username already exists',
+  })
+  async update(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    const userId = req.user.userId;
+
+    // Проверяем только разрешенные поля
+    const allowedFields = ['email', 'username', 'bio'];
+    const filteredDto = Object.keys(updateUserDto)
+      .filter((key) => allowedFields.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = updateUserDto[key];
+        return obj;
+      }, {});
+
+    console.log(filteredDto);
+
+    // Проверка на уникальность email и username
+    if (filteredDto['email']) {
+      const existingUserWithEmail = await this.usersService.findOneByEmail(
+        filteredDto['email'],
+      );
+      if (existingUserWithEmail && existingUserWithEmail.id !== userId) {
+        throw new BadRequestException(
+          'Пользователь с таким email уже существует',
+        );
+      }
+    }
+
+    if (filteredDto['username']) {
+      const existingUserWithUsername =
+        await this.usersService.findOneByUsername(filteredDto['username']);
+      if (existingUserWithUsername && existingUserWithUsername.id !== userId) {
+        throw new BadRequestException(
+          'Пользователь с таким username уже существует',
+        );
+      }
+    }
+
+    return this.usersService.update(userId, filteredDto);
   }
 
   @Delete(':id')

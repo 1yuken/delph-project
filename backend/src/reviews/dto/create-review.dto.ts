@@ -13,7 +13,7 @@ export class CreateReviewDto {
   @IsString()
   @ApiProperty({
     description: 'ID of the user receiving the review',
-    example: '123',
+    example: 1,
   })
   receiver_id: string;
 

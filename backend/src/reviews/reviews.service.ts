@@ -19,9 +19,7 @@ export class ReviewsService {
   ) {}
 
   async create(user: any, createReviewDto: CreateReviewDto) {
-    // Получаем пользователя из базы данных
-    const userFromDb = await this.usersService.findOneByUsername(user.username);
-    if (!userFromDb) {
+    if (!user) {
       throw new Error('User not found');
     }
 
@@ -36,12 +34,12 @@ export class ReviewsService {
     }
 
     // Проверяем, что пользователь не оставляет отзыв самому себе
-    if (user === createReviewDto.receiver_id) {
+    if (user.userId === Number.parseInt(createReviewDto.receiver_id)) {
       throw new ForbiddenException('You cannot leave a review for yourself');
     }
 
     const review = this.reviewsRepository.create({
-      sender_id: userFromDb.id,
+      sender_id: user.userId,
       receiver_id: createReviewDto.receiver_id,
       msg: createReviewDto.msg,
       job_id: createReviewDto.job_id,
