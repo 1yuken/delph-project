@@ -9,6 +9,7 @@ import { Review } from './entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { UsersService } from 'src/users/users.service';
+import { RespondToReviewDto } from './dto/respond-to-review.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -45,6 +46,34 @@ export class ReviewsService {
       job_id: createReviewDto.job_id,
       rating: createReviewDto.rating,
     });
+
+    return this.reviewsRepository.save(review);
+  }
+
+  async respondToReview(
+    id: string,
+    userId: string,
+    respondToReviewDto: RespondToReviewDto,
+  ) {
+    // Проверяем, что отзыв существует
+    const review = await this.reviewsRepository.findOne({
+      where: { id },
+    });
+
+    if (!review) {
+      throw new NotFoundException(`Review with ID ${id} not found`);
+    }
+
+    // Проверяем, что пользователь является получателем отзыва
+    if (review.receiver_id !== userId) {
+      throw new ForbiddenException(
+        'You can only respond to reviews addressed to you',
+      );
+    }
+
+    // Обновляем отзыв, добавляя ответ
+    review.response = respondToReviewDto.response;
+    review.responseDate = new Date();
 
     return this.reviewsRepository.save(review);
   }

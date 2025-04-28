@@ -19,6 +19,7 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
+import { RespondToReviewDto } from './dto/respond-to-review.dto';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -37,6 +38,29 @@ export class ReviewsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   create(@Request() req, @Body() createReviewDto: CreateReviewDto) {
     return this.reviewsService.create(req.user, createReviewDto);
+  }
+
+  @Post(':id/respond')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Respond to a review as the receiver' })
+  @ApiResponse({
+    status: 200,
+    description: 'The response has been successfully added to the review.',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 404, description: 'Review not found.' })
+  respondToReview(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() respondToReviewDto: RespondToReviewDto,
+  ) {
+    return this.reviewsService.respondToReview(
+      id,
+      req.user.userId,
+      respondToReviewDto,
+    );
   }
 
   @Get()

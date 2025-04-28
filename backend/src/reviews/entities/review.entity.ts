@@ -57,6 +57,17 @@ export class Review {
   })
   rating: number;
 
+  @Column({ type: 'text', nullable: true })
+  @ApiPropertyOptional({
+    description: 'Response from the receiver to this review',
+    example: 'Thank you for your feedback! It was a pleasure working with you.',
+  })
+  response: string;
+
+  @Column({ nullable: true })
+  @ApiPropertyOptional({ description: 'Date when the response was added' })
+  responseDate: Date;
+
   @CreateDateColumn()
   @ApiProperty({ description: 'Date when the review was created' })
   createdAt: Date;
