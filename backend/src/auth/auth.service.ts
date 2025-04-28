@@ -93,6 +93,6 @@ export class AuthService {
   }
 
   async getProfile(user: any) {
-    return this.usersService.findOneByUsername(user.username);
+    return this.usersService.findOne(user.userId);
   }
 }
