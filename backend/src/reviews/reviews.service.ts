@@ -27,7 +27,7 @@ export class ReviewsService {
     const receiver = await this.usersService.findOne(
       createReviewDto.receiver_id,
     );
-    if (!receiver) {
+    if (!receiver || !receiver.isActive) {
       throw new NotFoundException(
         `Receiver with ID ${createReviewDto.receiver_id} not found`,
       );
@@ -111,6 +111,7 @@ export class ReviewsService {
 
     return this.reviewsRepository.delete(id);
   }
+
   // Метод для получения среднего рейтинга пользователя
   async getAverageRating(userId: string) {
     const result = await this.reviewsRepository

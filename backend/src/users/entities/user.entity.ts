@@ -60,4 +60,7 @@ export class User {
   @CreateDateColumn()
   @ApiProperty({ description: 'Registration date' })
   registrationDate: Date;
+
+  @Column({ default: true })
+  isActive: boolean;
 }

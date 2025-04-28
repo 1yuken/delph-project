@@ -32,7 +32,7 @@ export class MessagesService {
       createMessageDto.receiverId,
     );
 
-    if (!receiver) {
+    if (!receiver || !receiver.isActive) {
       throw new NotFoundException(
         `User with ID ${createMessageDto.receiverId} not found`,
       );
@@ -73,7 +73,7 @@ export class MessagesService {
     const sender = await this.usersService.findOneByUsername(senderId.username);
     const receiver = await this.usersService.findOne(messageData.receiverId);
 
-    if (!receiver) {
+    if (!receiver || !receiver.isActive) {
       throw new NotFoundException(
         `User with ID ${messageData.receiverId} not found`,
       );

@@ -1,4 +1,10 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -41,11 +47,17 @@ export class UsersService {
   }
 
   findAll() {
-    return this.usersRepository.find();
+    return this.usersRepository.find({
+      where: { isActive: true },
+    });
   }
 
-  findOne(id: string) {
-    return this.usersRepository.findOneBy({ id });
+  async findOne(id: string) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user || !user.isActive) {
+      throw new ForbiddenException('User is not found');
+    }
+    return user;
   }
 
   findOneByUsername(username: string) {
@@ -63,14 +75,14 @@ export class UsersService {
   findOneByUsernameWithPassword(username: string) {
     return this.usersRepository.findOne({
       where: { username },
-      select: ['id', 'email', 'username', 'password'],
+      select: ['id', 'email', 'username', 'password', 'isActive'],
     });
   }
 
   findOneByEmailWithPassword(email: string) {
     return this.usersRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'username', 'password'],
+      select: ['id', 'email', 'username', 'password', 'isActive'],
     });
   }
 
@@ -79,45 +91,24 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
+    // Вместо удаления пользователя и связанных данных,
+    // просто обновляем статус пользователя на неактивный
     try {
-      // Удаляем все отзывы, где пользователь является отправителем или получателем
-      // Используем правильные имена полей из entity
-      await queryRunner.manager.query(
-        `DELETE FROM review WHERE sender_id = $1 OR receiver_id = $1`,
-        [id],
-      );
+      // Обновляем пользователя, устанавливая isActive в false
+      await this.usersRepository.update(id, {
+        isActive: false,
+        username: `deactivated_${id}`,
+        email: `deactivated_${id}@notexists.com`,
+        password: await bcrypt.hash(Math.random().toString(36), 10), // случайный пароль
+      });
 
-      // Удаляем все сообщения, где пользователь является отправителем или получателем
-      await queryRunner.manager.query(
-        `DELETE FROM message WHERE "senderId" = $1 OR "receiverId" = $1`,
-        [id],
-      );
-
-      // Удаляем все чаты, где пользователь участвует
-      await queryRunner.manager.query(
-        `DELETE FROM chat WHERE "user1Id" = $1 OR "user2Id" = $1`,
-        [id],
-      );
-
-      // Здесь можно добавить удаление других связанных сущностей
-      // ...
-
-      // Наконец, удаляем самого пользователя
-      await queryRunner.manager.delete('user', { id });
-
-      // Если всё прошло успешно, фиксируем транзакцию
-      await queryRunner.commitTransaction();
+      return {
+        success: true,
+        message: 'User has been deactivated successfully',
+      };
     } catch (err) {
-      // В случае ошибки откатываем все изменения
-      await queryRunner.rollbackTransaction();
+      this.logger.error(`Failed to deactivate user with ID ${id}`, err.stack);
       throw err;
-    } finally {
-      // Освобождаем queryRunner
-      await queryRunner.release();
     }
   }
 

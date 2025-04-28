@@ -25,9 +25,8 @@ export class AuthService {
       user = await this.usersService.findOneByUsernameWithPassword(login);
     }
 
-    if (!user) {
-      console.error('User not found');
-      return null;
+    if (!user || !user.isActive) {
+      throw new ForbiddenException('User not found');
     }
 
     try {
@@ -39,8 +38,7 @@ export class AuthService {
       }
       return null;
     } catch (error) {
-      console.error('Error comparing passwords:', error);
-      return null;
+      throw new ForbiddenException('Error comparing passwords:', error);
     }
   }
 
