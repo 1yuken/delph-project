@@ -55,12 +55,13 @@ export class User {
   @OneToMany(() => Portfolio, (portfolio) => portfolio.user)
   portfolios: Portfolio[];
 
-  // @Column({ type: 'simple-array', nullable: true })
-  // @ApiPropertyOptional({
-  //   description: 'User skills',
-  //   example: ['Vue', 'JavaScript', 'TypeScript', 'SCSS'],
-  // })
-  // skills: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  @ApiPropertyOptional({
+    description: 'User skills',
+    example: ['Vue', 'JavaScript', 'TypeScript', 'SCSS'],
+  })
+  skills: string[];
+
   @CreateDateColumn()
   @ApiProperty({ description: 'Registration date' })
   registrationDate: Date;

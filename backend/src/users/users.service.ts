@@ -90,6 +90,16 @@ export class UsersService {
     return this.usersRepository.update(id, updateUserDto);
   }
 
+  async updateSkills(id: string, skills: string[]) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new ForbiddenException(`User with ID ${id} not found`);
+    }
+
+    user.skills = skills;
+    return this.usersRepository.save(user);
+  }
+
   async remove(id: string) {
     // Вместо удаления пользователя и связанных данных,
     // просто обновляем статус пользователя на неактивный

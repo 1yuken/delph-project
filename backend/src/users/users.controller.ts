@@ -25,6 +25,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadDto } from './dto/file-upload.dto';
+import { UpdateSkillsDto } from './dto/update-skills.dto';
 
 @Controller('users')
 export class UsersController {
@@ -94,6 +95,18 @@ export class UsersController {
     }
 
     return this.usersService.update(userId, filteredDto);
+  }
+
+  @Patch('skills')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async updateSkills(@Request() req, @Body() updateSkillsDto: UpdateSkillsDto) {
+    const skillsArray = updateSkillsDto.skillsString
+      .split(',')
+      .map((skill) => skill.trim())
+      .filter((skill) => skill.length > 0);
+
+    return this.usersService.updateSkills(req.user.userId, skillsArray);
   }
 
   @Delete()
