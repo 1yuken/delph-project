@@ -3,8 +3,10 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Portfolio } from 'src/portfolios/entities/portfolio.entity';
 
 @Entity()
 export class User {
@@ -50,13 +52,15 @@ export class User {
   })
   avatarUrl: string;
 
+  @OneToMany(() => Portfolio, (portfolio) => portfolio.user)
+  portfolios: Portfolio[];
+
   // @Column({ type: 'simple-array', nullable: true })
   // @ApiPropertyOptional({
   //   description: 'User skills',
   //   example: ['Vue', 'JavaScript', 'TypeScript', 'SCSS'],
   // })
   // skills: string[];
-
   @CreateDateColumn()
   @ApiProperty({ description: 'Registration date' })
   registrationDate: Date;

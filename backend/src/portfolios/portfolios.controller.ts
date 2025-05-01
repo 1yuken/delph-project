@@ -1,0 +1,97 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import { PortfoliosService } from './portfolios.service';
+import { CreatePortfolioDto } from './dto/create-portfolio.dto';
+import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+
+@ApiTags('portfolios')
+@Controller('portfolios')
+export class PortfoliosController {
+  constructor(private readonly portfoliosService: PortfoliosService) {}
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        description: { type: 'string' },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  create(
+    @Body() createPortfolioDto: CreatePortfolioDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+  ) {
+    return this.portfoliosService.create(
+      createPortfolioDto,
+      req.user.userId,
+      file.path.replace('\\', '/'),
+    );
+  }
+
+  @Get()
+  findAll() {
+    return this.portfoliosService.findAll();
+  }
+
+  @Get('user')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  findMyPortfolios(@Request() req) {
+    return this.portfoliosService.findAllByUserId(req.user.userId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.portfoliosService.findOne(+id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  update(
+    @Param('id') id: string,
+    @Body() updatePortfolioDto: UpdatePortfolioDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+  ) {
+    return this.portfoliosService.update(
+      +id,
+      updatePortfolioDto,
+      req.user.userId,
+      file ? file.path.replace('\\', '/') : undefined,
+    );
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  remove(@Param('id') id: string, @Request() req) {
+    return this.portfoliosService.remove(+id, req.user.userId);
+  }
+}

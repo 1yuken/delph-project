@@ -9,6 +9,7 @@ import { join } from 'path';
 import { ReviewsModule } from './reviews/reviews.module';
 import { MessagesModule } from './messages/messages.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { PortfoliosModule } from './portfolios/portfolios.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     }),
     ReviewsModule,
     MessagesModule,
+    PortfoliosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
