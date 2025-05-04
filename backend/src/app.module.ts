@@ -10,6 +10,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { MessagesModule } from './messages/messages.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PortfoliosModule } from './portfolios/portfolios.module';
+import { ItemsModule } from './items/items.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PortfoliosModule } from './portfolios/portfolios.module';
     ReviewsModule,
     MessagesModule,
     PortfoliosModule,
+    ItemsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
