@@ -9,4 +9,6 @@ import AllItems from '@/components/AllItems.vue';
   <AllItems />
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>

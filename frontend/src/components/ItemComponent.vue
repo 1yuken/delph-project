@@ -33,27 +33,27 @@ const goToItemPage = () => {
 </script>
 
 <template>
-  <div class="py-3 px-4 border border-[#D6DDEB] max-w-[260px] w-full">
+  <div class="py-3 px-4 border border-[#D6DDEB] max-w-[260px] w-full rounded shadow-sm hover:shadow transition-shadow duration-200">
     <div class="flex items-center gap-2 mb-2">
-      <img :src="imageUrl" alt="#" />
+      <div class="flex items-center justify-center overflow-hidden">
+        <img :src="imageUrl" alt="#" class="w-full h-full object-cover" />
+      </div>
       <a
         @click.prevent="goToItemPage"
-        class="font-bold hover:text-[#0A65CC] hover:underline cursor-pointer"
+        class="font-bold hover:text-[#0A65CC] hover:underline cursor-pointer transition-colors duration-200"
       >
         {{ title }}
       </a>
     </div>
-    <p class="text-xs">
+    <p class="text-xs text-[#656565]">
       <template v-for="(item, index) in links" :key="index">
-        <a href="#" class="transition hover:text-[#0A65CC] hover:underline">{{ item }}</a>
-        <span v-if="index !== links.length - 1"> · </span>
+        <a href="#" class="transition-colors duration-200 hover:text-[#0A65CC] hover:underline">{{ item }}</a>
+        <span v-if="index !== links.length - 1" class="text-[#D6DDEB] mx-1">·</span>
       </template>
     </p>
     <div class="flex items-center gap-1 mt-2 cursor-pointer group">
-      <a class="text-xs text-[#656565] transition group-hover:text-black" @click.prevent="goToItemPage">Смотреть все</a>
-      <ArrowRightIcon class="transition group-hover:text-black" />
+      <a class="text-xs text-[#656565] transition-colors duration-200 group-hover:text-[#0A65CC]" @click.prevent="goToItemPage">Смотреть все</a>
+      <ArrowRightIcon class="text-[#656565] transition-colors duration-200 group-hover:text-[#0A65CC]" />
     </div>
   </div>
 </template>
-
-<style scoped></style>

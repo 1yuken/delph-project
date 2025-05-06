@@ -47,7 +47,6 @@ const handleScroll = () => {
     }
   });
 
-  // Если выделена "S" и это предпоследняя буква — принудительно выделяем "Z"
   if (currentLetter === 'S' && letters[letters.length - 1] === 'Z') {
     currentLetter = 'Z';
   }
