@@ -20,19 +20,10 @@ export class CreateUserDto {
   @IsString()
   password: string;
 
-  @ApiPropertyOptional({
-    description: 'User bio or description',
-    example:
-      'Experienced frontend developer passionate about creating intuitive interfaces',
-  })
   @IsOptional()
   @IsString()
   bio?: string;
 
-  @ApiPropertyOptional({
-    description: 'Profile picture URL',
-    example: 'https://example.com/avatar.jpg',
-  })
   @IsOptional()
   avatarUrl?: string;
 }

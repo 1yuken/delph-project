@@ -11,12 +11,12 @@ import { FileUploadService } from '../file-upload/file-upload.service';
 export class ItemsService {
   constructor(
     @InjectRepository(Item)
-    private itemsRepository: Repository<Item>,
-    private fileUploadService: FileUploadService,
+    private readonly itemsRepository: Repository<Item>,
+    private readonly fileUploadService: FileUploadService,
   ) {}
 
   async create(createItemDto: CreateItemDto, image?: Express.Multer.File) {
-    const { name, categories /* orderId*/ } = createItemDto;
+    const { name, categories } = createItemDto;
 
     // Создаем новый объект Item
     const item = new Item();
@@ -32,11 +32,6 @@ export class ItemsService {
       item.categories = categories;
     }
 
-    // // Если указан orderId, связываем с заказом
-    // if (orderId) {
-    //   item.orderId = orderId;
-    // }
-
     return this.itemsRepository.save(item);
   }
 
@@ -47,7 +42,6 @@ export class ItemsService {
     const skip = (page - 1) * limit;
 
     const [items, total] = await this.itemsRepository.findAndCount({
-      // relations: ['order'],
       skip,
       take: limit,
     });
@@ -58,7 +52,6 @@ export class ItemsService {
   async findOne(id: number): Promise<Item> {
     const item = await this.itemsRepository.findOne({
       where: { id },
-      // relations: ['order'],
     });
 
     if (!item) {
@@ -90,11 +83,6 @@ export class ItemsService {
       item.categories = updateItemDto.categories;
     }
 
-    // // Если указан orderId, обновляем связь с заказом
-    // if (updateItemDto.orderId !== undefined) {
-    //   item.orderId = updateItemDto.orderId;
-    // }
-
     return this.itemsRepository.save(item);
   }
 
@@ -104,12 +92,6 @@ export class ItemsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Item with ID ${id} not found`);
     }
-  }
-
-  async findByOrderId(orderId: number): Promise<Item[]> {
-    return this.itemsRepository.find({
-      where: { orderId },
-    });
   }
 
   async findByCategory(category: string): Promise<Item[]> {

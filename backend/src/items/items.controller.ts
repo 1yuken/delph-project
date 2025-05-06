@@ -9,7 +9,6 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
-  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -18,7 +17,6 @@ import {
   ApiResponse,
   ApiConsumes,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -84,17 +82,6 @@ export class ItemsController {
   @ApiResponse({ status: 404, description: 'Навык не найден' })
   remove(@Param('id') id: string) {
     return this.itemsService.remove(+id);
-  }
-
-  @Get('order/:orderId')
-  @ApiOperation({ summary: 'Получить навыки по ID заказа' })
-  @ApiResponse({
-    status: 200,
-    description: 'Список навыков для заказа',
-    type: [Item],
-  })
-  findByOrderId(@Param('orderId') orderId: string) {
-    return this.itemsService.findByOrderId(+orderId);
   }
 
   @Get('category/:category')
