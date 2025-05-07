@@ -70,8 +70,6 @@ export class UsersController {
         return obj;
       }, {});
 
-    console.log(filteredDto);
-
     // Проверка на уникальность email и username
     if (filteredDto['email']) {
       const existingUserWithEmail = await this.usersService.findOneByEmail(

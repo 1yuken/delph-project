@@ -28,7 +28,7 @@ export class AppController {
       },
       withEmail: {
         value: {
-          login: 'john.doe@example.com',
+          login: 'john.doe1@example.com',
           password: 'password123',
         },
       },

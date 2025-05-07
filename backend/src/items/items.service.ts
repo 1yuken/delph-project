@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -86,7 +86,7 @@ export class ItemsService {
     return this.itemsRepository.save(item);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const result = await this.itemsRepository.delete(id);
 
     if (result.affected === 0) {
@@ -94,11 +94,17 @@ export class ItemsService {
     }
   }
 
-  async findByCategory(category: string): Promise<Item[]> {
+  async findByCategory(category: string) {
     // Используем LIKE для поиска категории в строке категорий
     return this.itemsRepository
       .createQueryBuilder('item')
       .where('item.categories LIKE :category', { category: `%${category}%` })
       .getMany();
+  }
+
+  async findByName(name: string): Promise<Item[]> {
+    return this.itemsRepository.find({
+      where: { name: Like(`%${name}%`) },
+    });
   }
 }
