@@ -42,6 +42,14 @@ export class AuthService {
     }
   }
 
+  verifyToken(token: string) {
+    try {
+      return this.jwtService.verify(token);
+    } catch (error) {
+      throw new Error('Invalid token');
+    }
+  }
+
   login(user: any) {
     const payload = { username: user.username, sub: user.id };
     return {
