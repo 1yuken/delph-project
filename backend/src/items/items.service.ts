@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -98,13 +98,13 @@ export class ItemsService {
     // Используем LIKE для поиска категории в строке категорий
     return this.itemsRepository
       .createQueryBuilder('item')
-      .where('item.categories LIKE :category', { category: `%${category}%` })
+      .where('item.categories ILIKE :category', { category: `%${category}%` })
       .getMany();
   }
 
   async findByName(name: string): Promise<Item[]> {
     return this.itemsRepository.find({
-      where: { name: Like(`%${name}%`) },
+      where: { name: ILike(`%${name}%`) },
     });
   }
 }

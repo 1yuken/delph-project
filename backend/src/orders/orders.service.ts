@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindOptionsWhere, In } from 'typeorm';
+import { Repository, ILike, FindOptionsWhere, In } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -115,9 +115,9 @@ export class OrdersService {
       where.itemId = itemId;
     }
 
-    // Поиск по категории (используем LIKE для поиска в строке категорий)
+    // Поиск по категории (используем ILIKE для поиска в строке категорий)
     if (category) {
-      where.categories = Like(`%${category}%`);
+      where.categories = ILike(`%${category}%`);
     }
 
     // Поиск по названию и описанию
@@ -132,7 +132,7 @@ export class OrdersService {
     // Добавляем поиск по названию и описанию, если указан поисковый запрос
     if (search) {
       queryBuilder = queryBuilder.andWhere(
-        '(order.title LIKE :search OR order.description LIKE :search)',
+        '(order.title ILIKE :search OR order.description ILIKE :search)',
         {
           search: `%${search}%`,
         },
@@ -314,7 +314,7 @@ export class OrdersService {
 
   async findByCategory(category: string) {
     return this.ordersRepository.find({
-      where: { categories: Like(`%${category}%`) },
+      where: { categories: ILike(`%${category}%`) },
       relations: ['client', 'performer', 'item'],
     });
   }
