@@ -10,8 +10,8 @@ const isDisabled = ref(true);
 const userInfo = ref({
   name: 'Осман Асанов',
   username: '@yuken1',
-  email: 'a***@example.com',
-  phone: '+7 (9**) ***-**-45'
+  email: 'a***@gmail.com',
+  phone: '+7 (9**) ***-**-25'
 });
 </script>
 
@@ -115,7 +115,6 @@ const userInfo = ref({
       
       <div class="mt-8 text-center text-sm text-[#656565]">
         <p>Версия приложения: 1.0.0</p>
-        <p class="mt-1">© 2025 Delph. Все права защищены.</p>
       </div>
     </div>
   </div>

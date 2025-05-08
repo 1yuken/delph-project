@@ -18,19 +18,19 @@ defineProps({
         src="/public/avatar-full.jpg"
         alt="avatar"
       />
-      <div 
+      <!-- <div 
         class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 border-2 border-white"
         :class="isOnline ? 'bg-[#4CAF50]' : 'bg-[#656565]'"
-      ></div>
+      ></div> -->
     </div>
     
     <h1 class="text-3xl font-bold text-[#222222] mt-4">{{ fullName }}</h1>
     <p class="text-[#656565] text-sm">{{ username }}</p>
     
-    <div class="mt-3 flex items-center gap-1.5 text-[#656565]">
+    <!-- <div class="mt-3 flex items-center gap-1.5 text-[#656565]">
       <div class="w-2 h-2 rounded-full" :class="isOnline ? 'bg-[#4CAF50]' : 'bg-[#656565]'"></div>
       <span class="text-sm">{{ lastActive }}</span>
-    </div>
+    </div> -->
     
     <div class="mt-4 flex flex-col gap-1">
       <p class="text-[#656565] text-sm flex items-center gap-1.5">

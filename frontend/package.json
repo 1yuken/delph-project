@@ -15,6 +15,7 @@
     "@tailwindcss/vite": "^4.0.3",
     "@unhead/vue": "^1.11.18",
     "axios": "^1.7.9",
+    "lucide-vue-next": "^0.508.0",
     "pinia": "^2.3.1",
     "tailwindcss": "^4.0.3",
     "vue": "^3.5.13",

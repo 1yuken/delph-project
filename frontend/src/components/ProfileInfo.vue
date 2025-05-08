@@ -29,7 +29,7 @@ const truncatedDescription = computed(() => {
       <button 
         v-if="shouldTruncate" 
         @click="isExpanded = !isExpanded"
-        class="mt-2 text-[#0A65CC] text-sm font-medium hover:underline focus:outline-none"
+        class="mt-2 text-[#0A65CC] text-sm font-medium cursor-pointer hover:underline focus:outline-none"
       >
         {{ isExpanded ? 'Свернуть' : 'Читать полностью' }}
       </button>

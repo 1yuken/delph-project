@@ -6,7 +6,7 @@ import AllItems from '@/components/AllItems.vue';
 
 <template>
   <LastUpdates />
-  <AllItems />
+  <AllItems/>
 </template>
 
 <style scoped>

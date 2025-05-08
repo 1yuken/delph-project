@@ -5,7 +5,6 @@ import SpecialistCard from '@/components/SpecialistCard.vue'
 import SearchIcon2 from '@/icons/SearchIcon2.vue'
 import FilterIcon from '@/icons/FilterIcon.vue'
 
-// Опции сортировки
 const sortOptions = [
   { value: 'recommended', label: 'Рекомендуемые' },
   { value: 'rating', label: 'По рейтингу' },
@@ -18,7 +17,6 @@ const searchQuery = ref('')
 const showFilters = ref(false)
 const selectedSkills = ref([])
 
-// Список всех возможных навыков
 const allSkills = ['Vue', 'JavaScript', 'TypeScript', 'React', 'Angular', 'Node.js', 'PHP', 'Laravel', 'Python', 'Django', 'Ruby', 'Rails', 'Java', 'Spring', 'C#', '.NET', 'Go', 'Rust', 'Swift', 'Kotlin', 'Flutter', 'React Native', 'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'Firebase', 'MongoDB', 'MySQL', 'PostgreSQL', 'Redis', 'GraphQL', 'REST API', 'WebSockets', 'HTML', 'CSS', 'SCSS', 'Tailwind CSS', 'Bootstrap', 'Material UI', 'Figma', 'Adobe XD', 'Sketch', 'UI/UX', 'Vite', 'Webpack', 'Nuxt.js', 'Next.js', 'Gatsby', 'Svelte', 'Electron', 'PWA', 'SEO', 'DevOps', 'CI/CD', 'Git', 'GitHub', 'GitLab', 'Bitbucket', 'Jira', 'Confluence', 'Trello', 'Agile', 'Scrum', 'Kanban', 'Waterfall', 'TDD', 'BDD', 'Unit Testing', 'E2E Testing', 'Jest', 'Cypress', 'Selenium', 'Puppeteer', 'Playwright', 'Storybook', 'Swagger', 'OpenAPI', 'OAuth', 'JWT', 'SAML', 'SSO', 'LDAP', 'Active Directory', 'Blockchain', 'Smart Contracts', 'Solidity', 'Ethereum', 'Bitcoin', 'NFT', 'Web3', 'DeFi', 'AI', 'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'TensorFlow', 'PyTorch', 'Keras', 'scikit-learn', 'pandas', 'numpy', 'matplotlib', 'seaborn', 'Jupyter', 'R', 'Data Science', 'Big Data', 'Hadoop', 'Spark', 'Kafka', 'ELK Stack', 'Logstash', 'Kibana', 'Elasticsearch', 'Prometheus', 'Grafana', 'Datadog', 'New Relic', 'Sentry', 'Rollbar', 'Bugsnag', 'Mixpanel', 'Google Analytics', 'Hotjar', 'Amplitude', 'Segment', 'Customer.io', 'Intercom', 'Zendesk', 'Salesforce', 'HubSpot', 'Mailchimp', 'SendGrid', 'Twilio', 'Stripe', 'PayPal', 'Braintree', 'Square', 'Shopify', 'WooCommerce', 'Magento', 'WordPress', 'Drupal', 'Joomla', 'Ghost', 'Contentful', 'Sanity', 'Strapi', 'Prismic', 'Netlify', 'Vercel', 'Heroku', 'DigitalOcean', 'Linode', 'Vultr', 'OVH', 'Cloudflare', 'Akamai', 'Fastly', 'Imperva', 'Cloudinary', 'imgix', 'Uploadcare', 'Filestack', 'Algolia', 'Elasticsearch', 'Meilisearch', 'Typesense', 'Redis Search', 'Solr', 'Sphinx', 'Lucene', 'Vite', 'Nuxt.js']
 
 const specialists = ref([
@@ -79,11 +77,9 @@ const specialists = ref([
   },
 ])
 
-// Фильтрация по поиску и выбранным навыкам
 const filteredSpecialists = computed(() => {
   let result = specialists.value
 
-  // Фильтрация по поисковому запросу
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter(specialist => 
@@ -93,7 +89,6 @@ const filteredSpecialists = computed(() => {
     )
   }
 
-  // Фильтрация по выбранным навыкам
   if (selectedSkills.value.length > 0) {
     result = result.filter(specialist => 
       selectedSkills.value.every(skill => specialist.skills.includes(skill))
@@ -103,7 +98,6 @@ const filteredSpecialists = computed(() => {
   return result
 })
 
-// Сортировка специалистов
 const sortedSpecialists = computed(() => {
   const specialists = [...filteredSpecialists.value]
   
@@ -114,17 +108,15 @@ const sortedSpecialists = computed(() => {
       return specialists.sort((a, b) => b.reviewCount - a.reviewCount)
     case 'new':
       return specialists.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive))
-    default: // recommended
+    default:
       return specialists.sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount))
   }
 })
 
-// Популярные навыки (первые 10)
 const popularSkills = computed(() => {
   return allSkills.slice(0, 10)
 })
 
-// Переключение выбора навыка
 const toggleSkill = (skill) => {
   const index = selectedSkills.value.indexOf(skill)
   if (index === -1) {
@@ -134,7 +126,6 @@ const toggleSkill = (skill) => {
   }
 }
 
-// Очистка всех фильтров
 const clearFilters = () => {
   selectedSkills.value = []
   searchQuery.value = ''
@@ -142,11 +133,12 @@ const clearFilters = () => {
 </script>
 
 <template>
-  <div class="relative w-3/5 m-auto py-5 max-xl:w-4/5 max-lg:w-full max-lg:px-4">
+  <div class="relative w-full md:w-4/5 lg:w-3/5 mx-auto py-4 md:py-5 px-4 md:px-6">
     <div class="flex flex-col w-full">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-[#222222]">Специалисты</h1>
-        <div class="flex items-center gap-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-[#222222]">Специалисты</h1>
+        
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           <button 
             @click="showFilters = !showFilters" 
             class="flex items-center gap-1 px-3 py-2 text-sm border border-[#E5E9F2] rounded-md hover:border-[#0A65CC] transition-colors cursor-pointer"
@@ -159,10 +151,10 @@ const clearFilters = () => {
             </span>
           </button>
           
-          <div class="relative">
+          <div class="relative flex-grow sm:flex-grow-0">
             <select
               v-model="sortOption"
-              class="px-3 py-2 border border-[#E5E9F2] rounded-md text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#0A65CC] appearance-none pr-8 bg-white"
+              class="w-full sm:w-auto px-3 py-2 border border-[#E5E9F2] rounded-md text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#0A65CC] appearance-none pr-8 bg-white"
             >
               <option v-for="option in sortOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
@@ -177,7 +169,6 @@ const clearFilters = () => {
         </div>
       </div>
       
-      <!-- Поиск и фильтры -->
       <div class="mb-6">
         <div class="relative mb-4">
           <input
@@ -189,7 +180,6 @@ const clearFilters = () => {
           <SearchIcon2 class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]" />
         </div>
         
-        <!-- Фильтры по навыкам -->
         <div v-if="showFilters" class="bg-[#F9F9F9] p-4 rounded-md border border-[#E5E9F2] mb-4 animate-fadeIn">
           <div class="flex justify-between items-center mb-3">
             <h3 class="font-medium">Фильтр по навыкам</h3>
@@ -240,7 +230,6 @@ const clearFilters = () => {
         </div>
       </div>
       
-      <!-- Результаты -->
       <div v-if="sortedSpecialists.length" class="flex flex-col gap-4">
         <SpecialistCard
           v-for="specialist in sortedSpecialists"
@@ -249,8 +238,7 @@ const clearFilters = () => {
         />
       </div>
       
-      <!-- Нет результатов -->
-      <div v-else class="flex flex-col items-center justify-center py-12 text-center">
+      <div v-else class="flex flex-col items-center justify-center py-8 md:py-12 text-center">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-4 text-[#E5E9F2]">
           <path d="M10 10L4 16M4 10L10 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M19 10C19 10 20 12.5 20 14C20 15.5 19 16 17.5 16C16 16 14 15 14 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -279,6 +267,19 @@ const clearFilters = () => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (hover: none) {
+  button, select {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .flex-wrap {
+    margin-top: 0.5rem;
   }
 }
 </style>

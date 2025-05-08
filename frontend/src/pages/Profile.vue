@@ -129,7 +129,7 @@ const filteredReviews = computed(() => {
           
           <div class="mt-4 bg-[#F9F9F9] rounded-lg p-4 border border-[#E5E9F2]">
             <div class="flex items-center gap-2 mb-2">
-              <CheckCircle class="w-4 h-4 text-[#4CAF50]" />
+              <CheckIcon class="w-4 h-4 text-[#4CAF50]" />
               <p class="text-sm font-medium text-[#222222]">{{ stats.ordersCompleted }} заказов выполнено</p>
             </div>
             <div class="flex items-center gap-2 mb-2">
@@ -137,7 +137,7 @@ const filteredReviews = computed(() => {
               <p class="text-sm font-medium text-[#222222]">{{ stats.reviewsReceived }} отзывов получено</p>
             </div>
             <div class="flex items-center gap-2">
-              <CheckCircle class="w-4 h-4 text-[#4CAF50]" />
+              <CheckIcon class="w-4 h-4 text-[#4CAF50]" />
               <p class="text-sm font-medium text-[#222222]">{{ stats.successRate }}% заказов успешно сдано</p>
             </div>
           </div>

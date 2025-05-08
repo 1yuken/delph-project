@@ -13,7 +13,7 @@ defineProps({
   <div>
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold text-[#222222]">Портфолио</h2>
-      <button class="text-sm text-[#0A65CC] font-medium hover:underline flex items-center gap-1">
+      <button class="text-sm text-[#0A65CC] font-medium hover:underline flex items-center gap-1 cursor-pointer">
         Все проекты
         <ExternalLink class="w-3.5 h-3.5" />
       </button>
