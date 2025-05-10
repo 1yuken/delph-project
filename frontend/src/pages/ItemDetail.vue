@@ -188,7 +188,7 @@ const goBack = () => {
     <div class="max-w-6xl mx-auto">
       <!-- Хлебные крошки и кнопка назад -->
       <div class="mb-6">
-        <button @click="goBack" class="flex items-center text-[#656565] hover:text-[#0A65CC] transition-colors text-sm">
+        <button @click="goBack" class="flex items-center text-[#656565] hover:text-[#0A65CC] transition-colors text-sm cursor-pointer">
           <ChevronLeft class="w-4 h-4 mr-1" />
           Назад
         </button>
@@ -202,7 +202,7 @@ const goBack = () => {
         <!-- Заголовок и информация о товаре -->
         <div class="p-6 border-b border-[#E5E9F2]">
           <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-[#E5E9F2]">
+            <div class="w-16 h-16 p-1 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-[#E5E9F2]">
               <img 
                 :src="item.imageUrl" 
                 :alt="item.title" 
@@ -230,7 +230,7 @@ const goBack = () => {
             <div class="flex flex-wrap gap-2">
               <button
                 @click="selectLink('Все')"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
                 :class="selectedLink === 'Все' 
                   ? 'bg-[#0A65CC] text-white' 
                   : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'"
@@ -241,7 +241,7 @@ const goBack = () => {
                 v-for="(link, index) in item.links"
                 :key="index"
                 @click="selectLink(link)"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
                 :class="selectedLink === link 
                   ? 'bg-[#0A65CC] text-white' 
                   : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'"
@@ -271,7 +271,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('description')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Описание
                     <span class="ml-1">
@@ -290,7 +290,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('customer')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Заказчик
                     <span class="ml-1">
@@ -309,7 +309,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('status')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Статус
                     <span class="ml-1">
@@ -328,7 +328,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('date')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Дата
                     <span class="ml-1">
@@ -347,7 +347,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('deadline')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Срок
                     <span class="ml-1">
@@ -366,7 +366,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('price')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Цена
                     <span class="ml-1">

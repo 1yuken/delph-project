@@ -7,6 +7,7 @@ import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, UserPlus } fro
 
 const fullName = ref('');
 const email = ref('');
+const username = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
 const error = ref('');
@@ -102,7 +103,8 @@ const register = async () => {
       "http://localhost:3000/users",
       {
         // fullName: fullName.value,
-        username: email.value,
+        username: username.value,
+        email: email.value,
         password: password.value
       },
       {
@@ -242,8 +244,8 @@ const togglePasswordVisibility = (field) => {
                 @click="togglePasswordVisibility('password')"
                 class="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
-                <Eye v-if="!showPassword" class="h-5 w-5 text-[#656565] hover:text-[#222222]" />
-                <EyeOff v-else class="h-5 w-5 text-[#656565] hover:text-[#222222]" />
+                <Eye v-if="!showPassword" class="h-5 w-5 cursor-pointer text-[#656565] hover:text-[#222222]" />
+                <EyeOff v-else class="h-5 w-5 cursor-pointer text-[#656565] hover:text-[#222222]" />
               </button>
             </div>
             
@@ -306,8 +308,8 @@ const togglePasswordVisibility = (field) => {
                 @click="togglePasswordVisibility('confirm')"
                 class="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
-                <Eye v-if="!showPasswordConfirm" class="h-5 w-5 text-[#656565] hover:text-[#222222]" />
-                <EyeOff v-else class="h-5 w-5 text-[#656565] hover:text-[#222222]" />
+                <Eye v-if="!showPasswordConfirm" class="h-5 w-5 cursor-pointer text-[#656565] hover:text-[#222222]" />
+                <EyeOff v-else class="h-5 w-5 cursor-pointer text-[#656565] hover:text-[#222222]" />
               </button>
             </div>
             <p v-if="!passwordsMatch && passwordConfirm" class="text-red-500 text-xs mt-1">
@@ -316,7 +318,7 @@ const togglePasswordVisibility = (field) => {
           </div>
           
           <!-- Согласие с условиями -->
-          <div class="flex items-start mt-4">
+          <div class="flex items-start mt-4 cursor-pointer">
             <div class="flex items-center h-5">
               <input
                 id="terms"
@@ -340,7 +342,7 @@ const togglePasswordVisibility = (field) => {
           <button
             type="submit"
             :disabled="!isFormValid || isLoading"
-            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#0A65CC] text-white rounded-lg font-medium transition-all duration-200 hover:bg-[#085BBA] focus:outline-none focus:ring-2 focus:ring-[#0A65CC] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
+            class="w-full flex cursor-pointer items-center justify-center gap-2 py-2.5 px-4 bg-[#0A65CC] text-white rounded-lg font-medium transition-all duration-200 hover:bg-[#085BBA] focus:outline-none focus:ring-2 focus:ring-[#0A65CC] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
           >
             <span v-if="isLoading" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
             <span v-else><UserPlus class="h-4 w-4" /></span>
@@ -369,7 +371,7 @@ const togglePasswordVisibility = (field) => {
           <div class="grid grid-cols-3 gap-3">
             <button
               type="button"
-              class="flex justify-center items-center py-2 px-4 border border-[#E5E9F2] rounded-lg shadow-sm bg-white hover:bg-[#F9F9F9] transition-colors duration-200"
+              class="flex justify-center items-center cursor-pointer py-2 px-4 border border-[#E5E9F2] rounded-lg shadow-sm bg-white hover:bg-[#F9F9F9] transition-colors duration-200"
             >
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.5 12.5C22.5 10.7761 22.0311 9.0228 21.1328 7.42664C20.2344 5.83048 18.9323 4.42923 17.364 3.37368C15.7957 2.31814 13.9867 1.6343 12.0788 1.38408C10.1709 1.13385 8.2272 1.32825 6.42048 1.95065C4.61375 2.57305 2.99658 3.60248 1.70736 4.94339C0.418133 6.28429 0.49989 7.88743 0.0385323 9.62178C-0.422825 11.3561 0.0428931 13.1643 0.498893 14.8099C0.954892 16.4555 2.68414 17.8565 4.00001 19" stroke="#1877F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -378,7 +380,7 @@ const togglePasswordVisibility = (field) => {
             </button>
             <button
               type="button"
-              class="flex justify-center items-center py-2 px-4 border border-[#E5E9F2] rounded-lg shadow-sm bg-white hover:bg-[#F9F9F9] transition-colors duration-200"
+              class="flex justify-center items-center cursor-pointer py-2 px-4 border border-[#E5E9F2] rounded-lg shadow-sm bg-white hover:bg-[#F9F9F9] transition-colors duration-200"
             >
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#0088CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -387,7 +389,7 @@ const togglePasswordVisibility = (field) => {
             </button>
             <button
               type="button"
-              class="flex justify-center items-center py-2 px-4 border border-[#E5E9F2] rounded-lg shadow-sm bg-white hover:bg-[#F9F9F9] transition-colors duration-200"
+              class="flex justify-center items-center cursor-pointer py-2 px-4 border border-[#E5E9F2] rounded-lg shadow-sm bg-white hover:bg-[#F9F9F9] transition-colors duration-200"
             >
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#EA4335" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

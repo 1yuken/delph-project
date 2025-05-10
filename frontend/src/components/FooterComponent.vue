@@ -17,37 +17,6 @@ import { MessageSquare, CreditCard, User, Shield, BookOpen, HelpCircle, Mail, Ph
           <p class="text-[#656565] text-sm mb-6">
             Платформа для поиска и сотрудничества с профессиональными фрилансерами. Находите лучших специалистов для ваших проектов или предлагайте свои услуги.
           </p>
-          <div class="flex items-center gap-3">
-            <a 
-              href="#" 
-              class="flex items-center justify-center w-9 h-9 rounded-full bg-[#F0F7FF] text-[#0A65CC] hover:bg-[#0A65CC] hover:text-white transition-colors duration-200"
-              aria-label="Telegram"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 3L11 14M22 3L15 22L11 14M22 3L2 10L11 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-            <a 
-              href="#" 
-              class="flex items-center justify-center w-9 h-9 rounded-full bg-[#F0F7FF] text-[#0A65CC] hover:bg-[#0A65CC] hover:text-white transition-colors duration-200"
-              aria-label="VK"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 12C2 6.48 6.47 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.47 22 2 17.52 2 12ZM11.99 9.74C12.97 9.74 13.87 9.8 14.68 9.95C15.1 10.04 15.32 10.24 15.36 10.67C15.39 10.92 15.34 11.28 15.13 11.32C14.94 11.35 14.67 11.21 14.49 11.18C13.94 11.08 13.44 11.03 12.95 11.03C12.42 11.03 11.95 11.14 11.97 11.73C11.97 12.26 12.45 12.53 12.88 12.77C13.85 13.29 15.14 13.7 15.14 15.19C15.14 16.43 13.96 17.12 12.86 17.28C11.77 17.44 10.64 17.24 9.61 16.92C9.11 16.77 8.84 16.5 8.84 15.95C8.84 15.75 8.87 15.54 8.94 15.35C9.07 15 9.36 15.07 9.7 15.15C10.71 15.39 11.75 15.55 12.77 15.34C13.27 15.24 13.63 14.91 13.58 14.38C13.53 13.91 13.11 13.61 12.71 13.39C12.35 13.18 11.97 13.03 11.61 12.83C10.87 12.46 10.19 11.96 10.19 11.05C10.19 9.79 11.3 9.74 11.99 9.74Z" fill="currentColor"/>
-              </svg>
-            </a>
-            <a 
-              href="#" 
-              class="flex items-center justify-center w-9 h-9 rounded-full bg-[#F0F7FF] text-[#0A65CC] hover:bg-[#0A65CC] hover:text-white transition-colors duration-200"
-              aria-label="Instagram"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M16 2.5H8C4.96243 2.5 2.5 4.96243 2.5 8V16C2.5 19.0376 4.96243 21.5 8 21.5H16C19.0376 21.5 21.5 19.0376 21.5 16V8C21.5 4.96243 19.0376 2.5 16 2.5Z" stroke="currentColor" stroke-width="2"/>
-                <path d="M17.5 7C18.0523 7 18.5 6.55228 18.5 6C18.5 5.44772 18.0523 5 17.5 5C16.9477 5 16.5 5.44772 16.5 6C16.5 6.55228 16.9477 7 17.5 7Z" fill="currentColor"/>
-              </svg>
-            </a>
-          </div>
         </div>
         
         <!-- Колонка с навигацией -->
@@ -149,20 +118,6 @@ import { MessageSquare, CreditCard, User, Shield, BookOpen, HelpCircle, Mail, Ph
               </div>
             </li>
           </ul>
-          
-          <div class="mt-6">
-            <h4 class="font-medium text-[#222222] text-sm mb-3">Подписаться на новости</h4>
-            <div class="flex">
-              <input 
-                type="email" 
-                placeholder="Ваш email" 
-                class="flex-1 px-3 py-2 text-sm border border-r-0 border-[#E5E9F2] rounded-l-md focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC]"
-              />
-              <button class="px-3 py-2 bg-[#0A65CC] text-white text-sm rounded-r-md hover:bg-[#085BBA] transition-colors">
-                Отправить
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

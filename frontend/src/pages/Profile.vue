@@ -6,9 +6,7 @@ import ProfileInfo from '@/components/ProfileInfo.vue'
 import SkillsList from '@/components/SkillsList.vue'
 import PortfolioGallery from '@/components/PortfolioGallery.vue'
 import ReviewList from '@/components/ReviewList.vue'
-// import { MessageSquare, Calendar, CheckCircle, Award } from 'lucide-vue-next'
 import MessageSquare from '@/icons/MessageSquare.vue'
-import CalendarIcon from '@/icons/CalendarIcon.vue'
 import CheckIcon from '@/icons/CheckIcon.vue'
 import Award from '@/icons/Award.vue'
 
@@ -41,9 +39,9 @@ const skills = ref([
 ])
 
 const projects = ref([
-  { id: 1, title: 'Вёрстка', image: '/public/random.jpg', views: 123 },
-  { id: 2, title: 'Создание сайта', image: '/public/random2.jpg', views: 123 },
-  { id: 3, title: 'Создание сайта', image: '/public/portfolio.png', views: 123 },
+  { id: 1, title: 'Вёрстка', image: '/public/portf.png', views: 123 },
+  { id: 2, title: 'Создание сайта', image: '/public/portf.png', views: 123 },
+  { id: 3, title: 'Создание сайта', image: '/public/portf.png', views: 123 },
 ])
 
 const reviews = ref([
