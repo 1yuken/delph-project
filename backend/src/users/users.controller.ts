@@ -41,9 +41,41 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('freelancers')
+  @ApiOperation({ summary: 'Get all freelancers' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all freelancers',
+  })
+  findAllFreelancers() {
+    return this.usersService.findAllFreelancers();
+  }
+
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'User data',
+    schema: {
+      example: {
+        id: 1,
+        username: 'John Doe',
+        avatarUrl: 'http://example.com/avatar.jpg',
+        bio: 'User bio',
+        skills: ['JavaScript', 'Vue.js'],
+        registrationDate: '2024-01-01T00:00:00.000Z',
+        stats: {
+          ordersCompleted: 10,
+          reviewsReceived: 5,
+          successRate: 95,
+          rating: 4.8,
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    return this.usersService.findOne(+id);
   }
 
   @Patch()
@@ -62,7 +94,7 @@ export class UsersController {
     const userId = req.user.userId;
 
     // Проверяем только разрешенные поля
-    const allowedFields = ['email', 'username', 'bio'];
+    const allowedFields = ['email', 'username', 'bio', 'isFreelancer'];
     const filteredDto = Object.keys(updateUserDto)
       .filter((key) => allowedFields.includes(key))
       .reduce((obj, key) => {

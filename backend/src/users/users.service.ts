@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -52,12 +53,51 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string) {
-    const user = await this.usersRepository.findOneBy({ id });
-    if (!user || !user.isActive) {
-      throw new ForbiddenException('User is not found');
+  findAllFreelancers() {
+    return this.usersRepository.find({
+      where: { isActive: true, isFreelancer: true },
+      select: [
+        'id',
+        'username',
+        'avatarUrl',
+        'bio',
+        'skills',
+        'registrationDate',
+      ],
+    });
+  }
+
+  async findOne(id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { id, isActive: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        bio: true,
+        skills: true,
+        registrationDate: true,
+        isFreelancer: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return user;
+
+    // TODO: Добавить реальную статистику из базы данных
+    const stats = {
+      ordersCompleted: 0,
+      reviewsReceived: 0,
+      successRate: 0,
+      rating: 0,
+    };
+
+    return {
+      ...user,
+      stats,
+    };
   }
 
   findOneByUsername(username: string) {

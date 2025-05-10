@@ -18,6 +18,15 @@ export class CreateItemDto {
   image?: any;
 
   @ApiProperty({
+    description: 'URL изображения навыка',
+    required: false,
+    type: 'string',
+  })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @ApiProperty({
     description: 'Категории навыка через запятую',
     example: 'Web Service Development, Code Optimization',
     required: false,

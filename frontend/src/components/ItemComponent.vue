@@ -1,42 +1,42 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { ArrowRight, ExternalLink } from 'lucide-vue-next';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ArrowRight, ExternalLink } from 'lucide-vue-next'
 
 const props = defineProps({
   id: {
     type: [String, Number],
-    required: true
+    required: true,
   },
   imageUrl: {
     type: String,
-    required: true
+    required: true,
   },
   title: {
     type: String,
-    required: true
+    required: true,
   },
   links: {
     type: Array,
-    required: true
-  }
-});
+    required: true,
+  },
+})
 
-const router = useRouter();
-const isHovered = ref(false);
+const router = useRouter()
+const isHovered = ref(false)
 
 const goToItemPage = () => {
-  router.push(`/item/${props.id}`);
-};
+  router.push(`/item/${props.id}`)
+}
 
 // Обработка ошибки загрузки изображения
 const handleImageError = (event) => {
-  event.target.src = `https://via.placeholder.com/120x120/f0f7ff/0A65CC?text=${props.title.charAt(0)}`;
-};
+  event.target.src = `https://via.placeholder.com/120x120/f0f7ff/0A65CC?text=${props.title.charAt(0)}`
+}
 </script>
 
 <template>
-  <div 
+  <div
     class="bg-white rounded-lg border border-[#E5E9F2] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full cursor-pointer hover:border-[#0A65CC]"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
@@ -44,18 +44,18 @@ const handleImageError = (event) => {
   >
     <!-- Изображение -->
     <div class="relative overflow-hidden h-[160px] bg-[#F9F9F9] flex items-center justify-center">
-      <img 
-        :src="imageUrl" 
-        :alt="title" 
+      <img
+        :src="imageUrl"
+        :alt="title"
         class="max-w-[80%] max-h-[80%] object-contain transition-transform duration-300"
         :class="{ 'scale-105': isHovered }"
         @error="handleImageError"
       />
-      <div 
+      <div
         class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-300"
         :class="{ 'opacity-100': isHovered }"
       ></div>
-      <button 
+      <button
         @click.stop="goToItemPage"
         class="absolute bottom-3 right-3 bg-white/90 text-[#0A65CC] p-2 rounded-full transform translate-y-10 opacity-0 transition-all duration-300 hover:bg-white"
         :class="{ 'translate-y-0 opacity-100': isHovered }"
@@ -64,32 +64,37 @@ const handleImageError = (event) => {
       </button>
     </div>
     <div class="flex flex-col gap-2 px-4 py-3 min-h-[120px]">
-      <h3 class="font-semibold text-[#222222] mb-2 hover:text-[#0A65CC] transition-colors duration-200">
+      <h3
+        class="font-semibold text-[#222222] mb-2 hover:text-[#0A65CC] transition-colors duration-200"
+      >
         {{ title }}
       </h3>
       <div class="mb-3 flex-1">
         <div class="flex flex-wrap gap-1.5">
-          <a 
-            v-for="(link, index) in links.slice(0, 3)" 
-            :key="index" 
-            href="#" 
-            @click.stop
-            class="text-xs px-2 py-1 bg-[#F0F7FF] text-[#0A65CC] rounded-md hover:bg-[#E1EFFF] transition-colors duration-200 transform hover:scale-105"
+          <span
+            v-for="(cat, idx) in links.slice(0, 3)"
+            :key="idx"
+            class="text-xs px-2 py-1 bg-[#F0F7FF] text-[#0A65CC] rounded-md"
           >
-            {{ link }}
-          </a>
-          <span v-if="links.length > 3" class="text-xs px-2 py-1 bg-[#F9F9F9] text-[#656565] rounded-md">
+            {{ cat }}
+          </span>
+          <span
+            v-if="links.length > 3"
+            class="text-xs px-2 py-1 bg-[#F9F9F9] text-[#656565] rounded-md"
+          >
             +{{ links.length - 3 }}
           </span>
         </div>
       </div>
     </div>
-    <button 
-      @click.stop="goToItemPage" 
+    <button
+      @click.stop="goToItemPage"
       class="flex items-center gap-1.5 text-sm text-[#656565] hover:text-[#0A65CC] transition-colors duration-200 mt-auto group cursor-pointer px-4 py-3 hover:bg-[#F0F7FF] w-full"
     >
       <span>Смотреть все</span>
-      <ArrowRight class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" />
+      <ArrowRight
+        class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"
+      />
     </button>
   </div>
 </template>

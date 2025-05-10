@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { itemsApi, ordersApi } from '@/services/api'
 import { 
   Search, ArrowUp, ArrowDown, Clock, 
   Calendar, DollarSign, ChevronLeft, ChevronRight,
@@ -34,22 +34,22 @@ const loadData = async () => {
     isLoading.value = true
     
     // Загрузка данных о товаре
-    const { data: itemData } = await axios.get(
-      `https://51ee8a820928c63e.mokky.dev/items/${route.params.id}`,
-    )
-    item.value = itemData
+    item.value = await itemsApi.getOne(route.params.id)
 
     // Загрузка заказов
-    const { data: ordersData } = await axios.get(
-      `https://51ee8a820928c63e.mokky.dev/orders?categoryId=${route.params.id}`,
-    )
+    const ordersData = await ordersApi.getByItemId(route.params.id)
     
-    // Добавляем статусы к заказам для демонстрации
+    // Преобразуем данные заказов в нужный формат
     orders.value = ordersData.map(order => ({
-      ...order,
-      status: getRandomStatus(),
-      date: getRandomDate(),
-      deadline: getRandomDeadline()
+      id: order.id,
+      description: order.description,
+      customer: order.clientName || 'Зак��зчик',
+      avatar: order.clientAvatar || '/avatar-full.jpg',
+      status: order.status || getRandomStatus(),
+      date: order.creationDate || getRandomDate(),
+      deadline: order.completitionDate || getRandomDeadline(),
+      price: order.budget ? `${order.budget} ₽` : 'По договоренности',
+      category: order.categories
     }))
   } catch (error) {
     console.error('Ошибка загрузки данных:', error)
@@ -188,7 +188,7 @@ const goBack = () => {
     <div class="max-w-6xl mx-auto">
       <!-- Хлебные крошки и кнопка назад -->
       <div class="mb-6">
-        <button @click="goBack" class="flex items-center text-[#656565] hover:text-[#0A65CC] transition-colors text-sm cursor-pointer">
+        <button @click="goBack" class="flex items-center text-[#656565] hover:text-[#0A65CC] transition-colors text-sm">
           <ChevronLeft class="w-4 h-4 mr-1" />
           Назад
         </button>
@@ -202,7 +202,7 @@ const goBack = () => {
         <!-- Заголовок и информация о товаре -->
         <div class="p-6 border-b border-[#E5E9F2]">
           <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div class="w-16 h-16 p-1 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-[#E5E9F2]">
+            <div class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-[#E5E9F2]">
               <img 
                 :src="item.imageUrl" 
                 :alt="item.title" 
@@ -230,7 +230,7 @@ const goBack = () => {
             <div class="flex flex-wrap gap-2">
               <button
                 @click="selectLink('Все')"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 :class="selectedLink === 'Все' 
                   ? 'bg-[#0A65CC] text-white' 
                   : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'"
@@ -241,7 +241,7 @@ const goBack = () => {
                 v-for="(link, index) in item.links"
                 :key="index"
                 @click="selectLink(link)"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 :class="selectedLink === link 
                   ? 'bg-[#0A65CC] text-white' 
                   : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'"
@@ -250,15 +250,28 @@ const goBack = () => {
               </button>
             </div>
             
-            <!-- Поиск -->
-            <div class="relative w-full md:w-64">
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Поиск заказов"
-                class="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E9F2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC] bg-white"
-              />
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]" />
+            <div class="flex flex-col md:flex-row gap-3 items-center">
+              <!-- Поиск -->
+              <div class="relative w-full md:w-64">
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Поиск заказов"
+                  class="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E9F2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC] bg-white"
+                />
+                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]" />
+              </div>
+
+              <!-- Кнопка добавления предложения -->
+              <button
+                @click="router.push(`/create-order/${item.id}?category=${selectedLink}`)"
+                class="whitespace-nowrap px-4 py-2 bg-[#0A65CC] text-white rounded-lg text-sm font-medium hover:bg-[#085BBA] transition-colors flex items-center gap-2"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Добавить предложение
+              </button>
             </div>
           </div>
         </div>
@@ -271,7 +284,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('description')" 
-                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
+                    class="flex items-center text-sm font-medium text-[#222222]"
                   >
                     Описание
                     <span class="ml-1">
@@ -290,7 +303,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('customer')" 
-                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
+                    class="flex items-center text-sm font-medium text-[#222222]"
                   >
                     Заказчик
                     <span class="ml-1">
@@ -309,7 +322,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('status')" 
-                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
+                    class="flex items-center text-sm font-medium text-[#222222]"
                   >
                     Статус
                     <span class="ml-1">
@@ -328,7 +341,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('date')" 
-                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
+                    class="flex items-center text-sm font-medium text-[#222222]"
                   >
                     Дата
                     <span class="ml-1">
@@ -347,7 +360,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('deadline')" 
-                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
+                    class="flex items-center text-sm font-medium text-[#222222]"
                   >
                     Срок
                     <span class="ml-1">
@@ -366,7 +379,7 @@ const goBack = () => {
                 <th class="py-4 px-6 text-left">
                   <button 
                     @click="toggleSort('price')" 
-                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
+                    class="flex items-center text-sm font-medium text-[#222222]"
                   >
                     Цена
                     <span class="ml-1">

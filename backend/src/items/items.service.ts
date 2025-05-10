@@ -16,7 +16,7 @@ export class ItemsService {
   ) {}
 
   async create(createItemDto: CreateItemDto, image?: Express.Multer.File) {
-    const { name, categories } = createItemDto;
+    const { name, categories, imageUrl } = createItemDto;
 
     // Создаем новый объект Item
     const item = new Item();
@@ -25,6 +25,9 @@ export class ItemsService {
     // Если есть изображение, сохраняем URL
     if (image) {
       item.image = this.fileUploadService.getFileUrl(image.filename);
+    } else if (imageUrl) {
+      // Если URL изображения передан напрямую
+      item.image = imageUrl;
     }
 
     // Если указаны категории, сохраняем их

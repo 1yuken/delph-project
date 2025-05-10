@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { itemsApi } from '@/services/api'
 import ItemComponent from '@/components/ItemComponent.vue'
 import { Clock, RefreshCw } from 'lucide-vue-next'
 
@@ -11,10 +11,10 @@ const error = ref(null)
 const fetchRecentItems = async () => {
   isLoading.value = true
   error.value = null
-  
+
   try {
-    const { data } = await axios.get('https://51ee8a820928c63e.mokky.dev/items')
-    recentItems.value = data.reverse().slice(0, 5)
+    const { items } = await itemsApi.getAll(1, 1000)
+    recentItems.value = items.slice(-5)
   } catch (err) {
     console.error('Ошибка загрузки данных:', err)
     error.value = 'Не удалось загрузить последние обновления'

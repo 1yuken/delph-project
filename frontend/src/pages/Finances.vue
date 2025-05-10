@@ -10,7 +10,7 @@ import SearchIcon2 from '@/icons/SearchIcon2.vue'
 import Download from '@/icons/Download.vue'
 import ArrowUpRight from '@/icons/ArrowUpRight.vue'
 
-const countFinances = ref(1234)
+const countFinances = ref(79.92)
 const selectedFilter = ref('all')
 const selectedOperation = ref(null)
 const searchQuery = ref('')
@@ -21,8 +21,8 @@ const isLoading = ref(true)
 const operations = ref([
   {
     id: 1,
-    date: '2024-01-25T00:21:00',
-    formattedDate: '25 января 2024, 0:21',
+    date: '2025-05-08T00:21:00',
+    formattedDate: '8 мая 2024, 0:21',
     description: 'Заказ #XZU21Y3SR',
     status: 'Завершено',
     amount: 22.0,
@@ -32,30 +32,8 @@ const operations = ref([
   },
   {
     id: 2,
-    date: '2024-01-15T01:05:00',
-    formattedDate: '15 января 2024, 1:05',
-    description: 'Пополнение баланса #3E65828',
-    status: 'Завершено',
-    amount: 220.0,
-    currency: '₽',
-    details: 'Подробнее о пополнении #3E65828...',
-    type: 'deposit'
-  },
-  {
-    id: 3,
-    date: '2023-10-27T00:17:00',
-    formattedDate: '27 октября 2023, 00:17',
-    description: 'Пополнение баланса #MK9ZDTE',
-    status: 'Завершено',
-    amount: 540.59,
-    currency: '₽',
-    details: 'Подробнее о пополнении #MK9ZDTE...',
-    type: 'deposit'
-  },
-  {
-    id: 4,
-    date: '2023-09-10T16:22:00',
-    formattedDate: '10 сентября 2023, 16:22',
+    date: '2025-05-09T16:22:00',
+    formattedDate: '9 мая 2025, 16:22',
     description: 'Пополнение баланса #B799WUJ',
     status: 'В процессе',
     amount: 57.92,
@@ -64,20 +42,9 @@ const operations = ref([
     type: 'deposit'
   },
   {
-    id: 5,
-    date: '2024-03-01T16:01:00',
-    formattedDate: '1 марта 2024, 16:01',
-    description: 'Заказ #RB85FHLK',
-    status: 'Завершено',
-    amount: 78.52,
-    currency: '₽',
-    details: 'Подробнее о заказе RB85FHLK...',
-    type: 'order'
-  },
-  {
-    id: 6,
-    date: '2024-03-10T12:00:00',
-    formattedDate: '10 марта 2024, 12:00',
+    id: 3,
+    date: '2025-05-10T12:00:00',
+    formattedDate: '10 мая 2024, 12:40',
     description: 'Заказ #XT3LMVU',
     status: 'Отменено',
     amount: -15.0,
@@ -86,26 +53,15 @@ const operations = ref([
     type: 'order'
   },
   {
-    id: 7,
-    date: '2024-03-15T09:30:00',
-    formattedDate: '15 марта 2024, 09:30',
+    id: 4,
+    date: '2025-05-07T09:30:00',
+    formattedDate: '7 мая 2024, 09:30',
     description: 'Вывод средств #WD78912',
     status: 'Завершено',
     amount: -150.0,
     currency: '₽',
     details: 'Вывод средств на карту **** 4589',
     type: 'withdrawal'
-  },
-  {
-    id: 8,
-    date: '2024-02-28T14:45:00',
-    formattedDate: '28 февраля 2024, 14:45',
-    description: 'Комиссия платформы',
-    status: 'Завершено',
-    amount: -12.5,
-    currency: '₽',
-    details: 'Комиссия за использование платформы',
-    type: 'fee'
   }
 ])
 

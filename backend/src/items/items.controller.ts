@@ -28,6 +28,53 @@ import { PaginationQueryDto } from './dto/pagination-query.dto';
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
+  @Post('seed')
+  @ApiOperation({ summary: 'Создать тестовые данные' })
+  async seed() {
+    const testItems = [
+      {
+        name: 'Vue.js',
+        categories: 'Разработка, Frontend, JavaScript',
+        imageUrl: 'https://vuejs.org/images/logo.png',
+      },
+      {
+        name: 'React',
+        categories: 'Разработка, Frontend, JavaScript',
+        imageUrl: 'https://reactjs.org/logo-og.png',
+      },
+      {
+        name: 'Figma',
+        categories: 'Дизайн, UI/UX, Прототипирование',
+        imageUrl:
+          'https://static.figma.com/api/figma-extension-api/figma-logo.png',
+      },
+      {
+        name: 'Photoshop',
+        categories: 'Дизайн, Графика, Фоторедактирование',
+        imageUrl:
+          'https://www.adobe.com/content/dam/cc/us/en/creative-cloud/max2020/mnemonics/photoshop.svg',
+      },
+      {
+        name: 'SEO',
+        categories: 'Маркетинг, Оптимизация, Поисковые системы',
+        imageUrl:
+          'https://www.searchenginejournal.com/wp-content/uploads/2020/08/seo-guide-5f3a7b9e24a96.png',
+      },
+    ];
+
+    const createdItems = [];
+    for (const item of testItems) {
+      const createItemDto = new CreateItemDto();
+      createItemDto.name = item.name;
+      createItemDto.categories = item.categories;
+      createItemDto.imageUrl = item.imageUrl;
+      const created = await this.itemsService.create(createItemDto);
+      createdItems.push(created);
+    }
+
+    return createdItems;
+  }
+
   @Post()
   @ApiOperation({ summary: 'Создать новый навык' })
   @ApiResponse({ status: 201, description: 'Навык успешно создан', type: Item })

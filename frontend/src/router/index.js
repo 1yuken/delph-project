@@ -13,6 +13,7 @@ import Profile from '@/pages/Profile.vue'
 import Specialists from '@/pages/Specialists.vue'
 import Order from '@/pages/Order.vue'
 import OrderDetail from '@/components/OrderDetail.vue'
+import CreateOrder from '@/pages/CreateOrder.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -25,15 +26,20 @@ const routes = [
   { path: '/rules', component: Rules },
   { path: '/settings', component: Settings },
   { path: '/profile', component: Profile },
+  { path: '/profile/:id', component: Profile, props: true },
   { path: '/specialists', component: Specialists },
   { path: '/item/:id', component: ItemDetail, props: true },
   { path: '/', component: Order },
-  { path: '/order/:id', component: OrderDetail, props: true},
+  { path: '/order/:id', component: OrderDetail, props: true },
+  { path: '/create-order/:id', component: CreateOrder },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
 export default router
