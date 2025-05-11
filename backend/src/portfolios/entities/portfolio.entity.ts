@@ -19,7 +19,7 @@ export class Portfolio {
   imagePath: string;
 
   @Column()
-  userId: number;
+  userId: string;
 
   @ManyToOne(() => User, (user) => user.portfolios)
   @JoinColumn({ name: 'userId' })

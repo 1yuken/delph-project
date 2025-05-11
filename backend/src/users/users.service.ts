@@ -67,19 +67,9 @@ export class UsersService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const user = await this.usersRepository.findOne({
       where: { id, isActive: true },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        avatarUrl: true,
-        bio: true,
-        skills: true,
-        registrationDate: true,
-        isFreelancer: true,
-      },
     });
 
     if (!user) {
@@ -98,6 +88,13 @@ export class UsersService {
       ...user,
       stats,
     };
+  }
+
+  async findOneWithPortfolios(id: string) {
+    return this.usersRepository.findOne({
+      where: { id },
+      relations: ['portfolios'],
+    });
   }
 
   findOneByUsername(username: string) {

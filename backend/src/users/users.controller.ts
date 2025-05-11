@@ -11,6 +11,7 @@ import {
   Request,
   UploadedFile,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -75,7 +76,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findOne(id);
   }
 
   @Patch()
@@ -173,5 +174,19 @@ export class UsersController {
     }
 
     return this.usersService.updateAvatar(req.user.username, file);
+  }
+
+  @Get(':id/portfolios')
+  @ApiOperation({ summary: 'Get user portfolios' })
+  @ApiResponse({
+    status: 200,
+    description: 'User portfolios',
+  })
+  async getUserPortfolios(@Param('id') id: string) {
+    const user = await this.usersService.findOneWithPortfolios(id);
+    if (!user) {
+      throw new ForbiddenException(`User with ID ${id} not found`);
+    }
+    return user.portfolios;
   }
 }

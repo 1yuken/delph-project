@@ -18,7 +18,7 @@ export class PortfoliosService {
 
   async create(
     createPortfolioDto: CreatePortfolioDto,
-    userId: number,
+    userId: string,
     imagePath: string,
   ) {
     const portfolio = this.portfolioRepository.create({
@@ -33,7 +33,7 @@ export class PortfoliosService {
     return await this.portfolioRepository.find();
   }
 
-  async findAllByUserId(userId: number) {
+  async findAllByUserId(userId: string) {
     return await this.portfolioRepository.find({ where: { userId } });
   }
 
@@ -45,10 +45,21 @@ export class PortfoliosService {
     return portfolio;
   }
 
+  async findOneWithUser(id: number) {
+    const portfolio = await this.portfolioRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio with ID ${id} not found`);
+    }
+    return portfolio;
+  }
+
   async update(
     id: number,
     updatePortfolioDto: UpdatePortfolioDto,
-    userId: number,
+    userId: string,
     imagePath?: string,
   ) {
     const portfolio = await this.findOne(id);
@@ -68,7 +79,7 @@ export class PortfoliosService {
     return this.findOne(id);
   }
 
-  async remove(id: number, userId: number) {
+  async remove(id: number, userId: string) {
     const portfolio = await this.findOne(id);
 
     if (portfolio.userId !== userId) {
