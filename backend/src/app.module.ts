@@ -12,6 +12,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { PortfoliosModule } from './portfolios/portfolios.module';
 import { ItemsModule } from './items/items.module';
 import { OrdersModule } from './orders/orders.module';
+import { FinancesModule } from './finances/finances.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { OrdersModule } from './orders/orders.module';
     PortfoliosModule,
     ItemsModule,
     OrdersModule,
+    FinancesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
