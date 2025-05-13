@@ -11,9 +11,10 @@ import CheckIcon from '@/icons/CheckIcon.vue'
 import Award from '@/icons/Award.vue'
 import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const fullName = ref('')
 const username = ref('')
@@ -28,6 +29,11 @@ const isOwnProfile = ref(false)
 const avatarUrl = ref(null)
 const isLoading = ref(true)
 
+// Добавляем вычисляемое свойство для userId
+const currentUserId = computed(() => {
+  return route.params.id || authStore.userId.value
+})
+
 // Загрузка данных профиля
 const loadProfileData = async () => {
   try {
@@ -39,11 +45,7 @@ const loadProfileData = async () => {
       },
     })
     console.log('Profile data loaded:', response.data)
-    console.log('Current user ID:', authStore.userId.value)
-    console.log('Profile ID:', userId)
-    console.log('Current avatar URL:', authStore.avatarUrl.value)
-    console.log('Avatar URL type:', typeof response.data.avatarUrl)
-    console.log('Avatar URL value:', response.data.avatarUrl)
+    console.log('Reviews from API:', response.data.reviews)
 
     if (response.data) {
       // Обновляем данные пользователя
@@ -95,8 +97,25 @@ const loadProfileData = async () => {
       }
 
       // Обновляем отзывы
-      if (response.data.reviews) {
-        reviews.value = response.data.reviews
+      console.log('Ответ с backend:', response.data)
+      if (Array.isArray(response.data.reviews)) {
+        reviews.value = response.data.reviews.map((r) => {
+          console.log('Processing review:', r)
+          return {
+            ...r,
+            name: r.sender?.username || r.sender_username || 'Пользователь',
+            avatar: r.sender?.avatarUrl || r.sender_avatarUrl || '/avatar-default.jpg',
+            order: 'Заказ #' + (r.job_id || ''),
+            project: 'Проект #' + (r.job_id || ''),
+            date: r.createdAt || r.date,
+            comment: r.msg || r.comment,
+            rating: r.rating,
+          }
+        })
+        console.log('Transformed reviews:', reviews.value)
+      } else {
+        reviews.value = []
+        console.log('No reviews array in response')
       }
     }
   } catch (err) {
@@ -120,6 +139,14 @@ watch(
   () => isOwnProfile.value,
   (newValue) => {
     console.log('isOwnProfile changed:', newValue)
+  },
+)
+
+// Добавляем watch для отслеживания изменений маршрута
+watch(
+  () => route.params.id,
+  () => {
+    loadProfileData()
   },
 )
 
@@ -152,6 +179,56 @@ const filteredReviews = computed(() => {
   }
   return reviews.value
 })
+
+// Добавляем обработчики для отзывов
+const handleReviewAdded = async (savedReview) => {
+  try {
+    reviews.value = [
+      ...reviews.value,
+      {
+        ...savedReview,
+        name: authStore.userName?.value || authStore.userName || '',
+        avatar: authStore.avatarUrl?.value || authStore.avatarUrl || '',
+        order: 'Заказ #' + (savedReview.job_id || savedReview.jobId || ''),
+        project: 'Проект #' + (savedReview.job_id || savedReview.jobId || ''),
+        date: savedReview.createdAt || new Date().toISOString(),
+        comment: savedReview.msg,
+      },
+    ]
+    await loadProfileData()
+  } catch (err) {
+    console.error('Error adding review:', err)
+  }
+}
+
+const handleReviewResponse = async (responseData) => {
+  try {
+    // TODO: Add API call to save response
+    // const response = await reviewsApi.addResponse(responseData)
+
+    // Обновляем отзыв с ответом
+    const reviewIndex = reviews.value.findIndex((r) => r.id === responseData.reviewId)
+    if (reviewIndex !== -1) {
+      reviews.value[reviewIndex] = {
+        ...reviews.value[reviewIndex],
+        response: {
+          text: responseData.text,
+          date: responseData.date,
+        },
+      }
+    }
+  } catch (err) {
+    console.error('Error adding review response:', err)
+  }
+}
+
+const handleSendMessage = () => {
+  const userId = route.params.id || authStore.userId.value
+  router.push({
+    path: '/messages',
+    query: { userId: userId },
+  })
+}
 </script>
 
 <template>
@@ -185,6 +262,7 @@ const filteredReviews = computed(() => {
         <div class="min-w-[200px]">
           <button
             v-if="!isOwnProfile"
+            @click="handleSendMessage"
             class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm rounded-md font-medium bg-[#0A65CC] text-white transition-colors hover:bg-[#085BBA] cursor-pointer"
           >
             <MessageSquare class="w-4 h-4" />
@@ -225,6 +303,7 @@ const filteredReviews = computed(() => {
       <PortfolioGallery
         :projects="projects"
         :isEditable="isOwnProfile"
+        :userId="currentUserId"
         @update:projects="projects = $event"
       />
     </div>
@@ -232,9 +311,13 @@ const filteredReviews = computed(() => {
     <!-- Отзывы -->
     <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 shadow-sm">
       <ReviewList
-        :reviews="filteredReviews"
+        :reviews="reviews"
         :averageRating="averageRating"
+        :profileId="currentUserId"
+        :projects="projects"
         v-model="reviewFilter"
+        @review-added="handleReviewAdded"
+        @review-response-added="handleReviewResponse"
       />
     </div>
   </div>

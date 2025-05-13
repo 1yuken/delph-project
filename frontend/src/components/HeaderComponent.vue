@@ -34,20 +34,44 @@ const isUserAuthenticated = ref(authStore.isAuthenticated.value)
 const currentUsername = ref(authStore.username.value)
 const currentAvatarUrl = ref(authStore.avatarUrl.value)
 
+console.log('HeaderComponent - initial state:', {
+  isAuthenticated: isUserAuthenticated.value,
+  username: currentUsername.value,
+  avatarUrl: currentAvatarUrl.value,
+})
+
 // Отслеживание изменений в authStore
 watchEffect(() => {
   isUserAuthenticated.value = authStore.isAuthenticated.value
   currentUsername.value = authStore.username.value
   currentAvatarUrl.value = authStore.avatarUrl.value
-  console.log('Header watchEffect - avatarUrl:', authStore.avatarUrl.value)
+
+  console.log('HeaderComponent watchEffect - state updated:', {
+    isAuthenticated: isUserAuthenticated.value,
+    username: currentUsername.value,
+    avatarUrl: currentAvatarUrl.value,
+  })
 })
 
 // Добавляем watch для отслеживания изменений аватара
 watch(
   () => authStore.avatarUrl.value,
   (newAvatarUrl) => {
-    console.log('Avatar URL changed in header:', newAvatarUrl)
+    console.log('HeaderComponent - avatar URL changed:', newAvatarUrl)
     currentAvatarUrl.value = newAvatarUrl
+  },
+  { immediate: true },
+)
+
+// Добавляем watch для отслеживания аутентификации
+watch(
+  () => authStore.isAuthenticated.value,
+  (isAuthenticated) => {
+    console.log('HeaderComponent - authentication changed:', isAuthenticated)
+    if (isAuthenticated) {
+      currentAvatarUrl.value = authStore.avatarUrl.value
+      console.log('HeaderComponent - setting avatar after auth:', authStore.avatarUrl.value)
+    }
   },
   { immediate: true },
 )
@@ -151,12 +175,17 @@ const handleSearchBlur = () => {
 
 // Жизненный цикл компонента
 onMounted(() => {
+  console.log('HeaderComponent - mounted')
   document.addEventListener('click', closeMenus)
   document.addEventListener('click', handleOutsideClick)
   authStore.checkAuth()
   fetchItemsForSearch()
   currentAvatarUrl.value = authStore.avatarUrl.value
-  console.log('Header mounted - avatarUrl:', authStore.avatarUrl.value)
+  console.log('HeaderComponent - mounted state:', {
+    isAuthenticated: isUserAuthenticated.value,
+    username: currentUsername.value,
+    avatarUrl: currentAvatarUrl.value,
+  })
 })
 
 onUnmounted(() => {

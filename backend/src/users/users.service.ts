@@ -15,6 +15,7 @@ import { FileUploadService } from 'src/file-upload/file-upload.service';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
 import { DataSource } from 'typeorm';
+import { ReviewsService } from 'src/reviews/reviews.service';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,8 @@ export class UsersService {
     private readonly dataSource: DataSource,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
+    @Inject(forwardRef(() => ReviewsService))
+    private readonly reviewsService: ReviewsService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -84,9 +87,13 @@ export class UsersService {
       rating: 0,
     };
 
+    // Получаем отзывы пользователя
+    const reviews = await this.reviewsService.findByReceiver(id);
+
     return {
       ...user,
       stats,
+      reviews,
     };
   }
 
@@ -112,14 +119,14 @@ export class UsersService {
   findOneByUsernameWithPassword(username: string) {
     return this.usersRepository.findOne({
       where: { username },
-      select: ['id', 'email', 'username', 'password', 'isActive'],
+      select: ['id', 'email', 'username', 'password', 'isActive', 'avatarUrl'],
     });
   }
 
   findOneByEmailWithPassword(email: string) {
     return this.usersRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'username', 'password', 'isActive'],
+      select: ['id', 'email', 'username', 'password', 'isActive', 'avatarUrl'],
     });
   }
 

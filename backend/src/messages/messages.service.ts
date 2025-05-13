@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { Message } from './entities/message.entity';
 import { Chat } from './entities/chat.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -26,43 +26,96 @@ export class MessagesService {
     private fileUploadService: FileUploadService,
   ) {}
 
-  async create(senderId, createMessageDto: CreateMessageDto) {
-    const sender = await this.usersService.findOneByUsername(senderId.username);
-    const receiver = await this.usersService.findOne(
-      createMessageDto.receiverId,
-    );
+  async create(user: any, createMessageDto: CreateMessageDto) {
+    try {
+      this.logger.debug('Creating message with data:', {
+        user,
+        createMessageDto,
+      });
 
-    if (!receiver || !receiver.isActive) {
-      throw new NotFoundException(
-        `User with ID ${createMessageDto.receiverId} not found`,
+      const { content, receiverId } = createMessageDto;
+      const senderId = user.userId;
+
+      if (!senderId || !receiverId) {
+        this.logger.error('Missing required fields:', { senderId, receiverId });
+        throw new Error('Missing required fields: senderId or receiverId');
+      }
+
+      // Get sender and receiver details first
+      const sender = await this.usersService.findOne(senderId);
+      const receiver = await this.usersService.findOne(receiverId);
+
+      if (!sender || !receiver) {
+        this.logger.error('User not found:', { senderId, receiverId });
+        throw new Error('User not found');
+      }
+
+      // Create the message
+      const message = await this.messagesRepository.save({
+        content,
+        senderId,
+        receiverId,
+        isRead: false,
+      });
+
+      this.logger.debug('Message saved:', message);
+
+      // Update or create chat
+      const [smallerId, largerId] =
+        senderId < receiverId ? [senderId, receiverId] : [receiverId, senderId];
+
+      const chat = await this.chatsRepository.findOne({
+        where: { user1Id: smallerId, user2Id: largerId },
+      });
+
+      if (chat) {
+        this.logger.debug('Updating existing chat:', chat.id);
+        // Update chat with new message
+        chat.lastMessageContent = content;
+        // Инкрементировать unreadCount для любого получателя
+        if (receiverId === chat.user1Id || receiverId === chat.user2Id) {
+          chat.unreadCount += 1;
+        }
+        await this.chatsRepository.save(chat);
+      } else {
+        this.logger.debug('Creating new chat');
+        await this.chatsRepository.save({
+          user1Id: smallerId,
+          user2Id: largerId,
+          lastMessageContent: content,
+          unreadCount: 1,
+        });
+      }
+
+      // Return complete message object with all required fields
+      const response = {
+        id: message.id,
+        content: message.content,
+        senderId: message.senderId,
+        receiverId: message.receiverId,
+        isRead: message.isRead,
+        createdAt: message.createdAt,
+        sender: {
+          id: sender.id,
+          username: sender.username,
+          avatarUrl: sender.avatarUrl || null,
+        },
+        receiver: {
+          id: receiver.id,
+          username: receiver.username,
+          avatarUrl: receiver.avatarUrl || null,
+        },
+      };
+
+      this.logger.debug('Returning response:', response);
+      return response;
+    } catch (error) {
+      this.logger.error(
+        `Error creating message: ${error.message}`,
+        error.stack,
       );
+      throw error;
     }
-
-    if (senderId.userId === Number.parseInt(createMessageDto.receiverId)) {
-      throw new ForbiddenException('Cannot send message to yourself');
-    }
-
-    // Create message - explicitly set isRead to false
-    const message = this.messagesRepository.create({
-      content: createMessageDto.content || '',
-      sender,
-      senderId: sender.id,
-      receiver,
-      receiverId: createMessageDto.receiverId,
-      isRead: true,
-    });
-
-    // Save message
-    const savedMessage = await this.messagesRepository.save(message);
-
-    // Update or create chat
-    await this.updateOrCreateChat(
-      sender.id,
-      createMessageDto.receiverId,
-      createMessageDto.content || '',
-    );
-
-    return savedMessage;
   }
 
   async createWithImage(
@@ -129,24 +182,16 @@ export class MessagesService {
 
     // Try to find existing chat
     let chat = await this.chatsRepository.findOne({
-      where: [{ user1Id: smallerId, user2Id: largerId }],
+      where: { user1Id: smallerId, user2Id: largerId },
     });
 
     if (chat) {
       // Update existing chat
       chat.lastMessageContent = lastMessageContent;
-
-      // Increment unread count for the receiver
-      // If user1Id is the sender, increment unreadCount for user2
-      // If user2Id is the sender, set unreadCount to 1 (for user1)
-      if (user1Id === smallerId) {
-        // user1 is sending to user2
-        chat.unreadCount = chat.unreadCount + 1;
-      } else {
-        // user2 is sending to user1
-        chat.unreadCount = 1;
+      // Only increment unread count if the receiver is user1
+      if (chat.user1Id === user2Id) {
+        chat.unreadCount += 1;
       }
-
       await this.chatsRepository.save(chat);
     } else {
       // Create new chat
@@ -195,11 +240,33 @@ export class MessagesService {
   }
 
   async getChats(userId: string): Promise<Chat[]> {
-    // Get all chats for user
-    return this.chatsRepository.find({
+    // Получаем все чаты пользователя
+    const chats = await this.chatsRepository.find({
       where: [{ user1Id: userId }, { user2Id: userId }],
       order: { updatedAt: 'DESC' },
     });
+
+    for (const chat of chats) {
+      // Определяем ID собеседника
+      const companionId = chat.user1Id === userId ? chat.user2Id : chat.user1Id;
+      // Находим последнее сообщение пользователя в этом чате
+      const lastMyMessage = await this.messagesRepository.findOne({
+        where: [{ senderId: userId, receiverId: companionId }],
+        order: { createdAt: 'DESC' },
+      });
+      let afterDate = lastMyMessage ? lastMyMessage.createdAt : new Date(0);
+      // Считаем количество сообщений собеседника после последнего сообщения пользователя
+      const unreadCount = await this.messagesRepository.count({
+        where: {
+          senderId: companionId,
+          receiverId: userId,
+          createdAt: MoreThan(afterDate),
+          isRead: false,
+        },
+      });
+      chat.unreadCount = unreadCount;
+    }
+    return chats;
   }
 
   async markAsRead(userId: string, otherUserId: string): Promise<void> {
@@ -208,45 +275,39 @@ export class MessagesService {
     );
 
     // Mark all messages from otherUser to user as read
-    const updateResult = await this.messagesRepository.update(
+    await this.messagesRepository.update(
       { senderId: otherUserId, receiverId: userId, isRead: false },
       { isRead: true },
     );
 
-    this.logger.log(`Updated ${updateResult.affected} messages to read status`);
-
-    // Reset unread count in chat
+    // Найти чат между userId и otherUserId
     const [smallerId, largerId] =
       userId < otherUserId ? [userId, otherUserId] : [otherUserId, userId];
 
-    // We need to determine which user is the receiver to reset the correct unread count
-    let unreadCountUpdate = {};
+    const chat = await this.chatsRepository.findOne({
+      where: { user1Id: smallerId, user2Id: largerId },
+    });
 
-    if (userId === smallerId) {
-      // Current user is user1, so reset unreadCount (which tracks messages from user2 to user1)
-      unreadCountUpdate = { unreadCount: 0 };
-    } else {
-      // Current user is user2, so we need to reset unreadCount differently
-      // This is a bit tricky with the current schema, might need to add a separate field
-      // For now, we'll reset it to 0 as well
-      unreadCountUpdate = { unreadCount: 0 };
+    if (!chat) return;
+
+    // Сбросить unreadCount только если userId — это receiverId (тот, кто читает сообщения)
+    if (userId === chat.user1Id || userId === chat.user2Id) {
+      chat.unreadCount = 0;
+      await this.chatsRepository.save(chat);
     }
-
-    const chatUpdateResult = await this.chatsRepository.update(
-      { user1Id: smallerId, user2Id: largerId },
-      unreadCountUpdate,
-    );
-
-    this.logger.log(
-      `Updated chat unread count: ${chatUpdateResult.affected} chats affected`,
-    );
   }
 
-  async getUnreadCount(userId: string): Promise<number> {
-    this.logger.log(`Getting unread count for user ${userId}`);
+  async getUnreadCount(userId: string, otherUserId?: string): Promise<number> {
+    this.logger.log(
+      `Getting unread count for user ${userId}${otherUserId ? ` from user ${otherUserId}` : ''}`,
+    );
+
+    const whereCondition = otherUserId
+      ? { receiverId: userId, senderId: otherUserId, isRead: false }
+      : { receiverId: userId, isRead: false };
 
     const result = await this.messagesRepository.count({
-      where: { receiverId: userId, isRead: false },
+      where: whereCondition,
     });
 
     this.logger.log(`Unread count for user ${userId}: ${result}`);

@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ReviewItem from './ReviewItem.vue'
+import AddReview from './AddReview.vue'
 import StarIcon from '@/icons/StarIcon.vue'
+import { useAuthStore } from '@/stores/authStore'
 
 const props = defineProps({
   reviews: Array,
@@ -9,11 +11,41 @@ const props = defineProps({
     type: [Number, String],
     default: 0,
   },
+  profileId: {
+    type: String,
+    required: true,
+  },
+  projects: {
+    type: Array,
+    default: () => [],
+  },
 })
 
-const emit = defineEmits(['update:filter'])
+console.log('ReviewList received reviews:', props.reviews)
+console.log('ReviewList received averageRating:', props.averageRating)
 
+const emit = defineEmits(['update:filter', 'review-added', 'review-response-added'])
+
+const authStore = useAuthStore()
 const filter = ref('all')
+
+const isOwnProfile = computed(() => {
+  return props.profileId === authStore.userId.value
+})
+
+// Добавляем тестовый проект, если нет других проектов
+const availableProjects = computed(() => {
+  if (props.projects && props.projects.length > 0) {
+    return props.projects
+  }
+  return [
+    {
+      id: 'test-1',
+      title: 'Тестовый проект',
+      description: 'Это тестовый проект для демонстрации функционала отзывов',
+    },
+  ]
+})
 
 function updateFilter(event) {
   filter.value = event.target.value
@@ -52,6 +84,14 @@ const ratingPercentages = computed(() => {
 
   return result
 })
+
+const handleReviewAdded = (reviewData) => {
+  emit('review-added', reviewData)
+}
+
+const handleReviewResponse = (responseData) => {
+  emit('review-response-added', responseData)
+}
 </script>
 
 <template>
@@ -130,13 +170,20 @@ const ratingPercentages = computed(() => {
     </div>
 
     <!-- Список отзывов -->
-    <div v-if="reviews.length > 0" class="border border-[#E5E9F2] rounded-lg overflow-hidden">
+    <div v-if="reviews.length > 0" class="border border-[#E5E9F2] rounded-lg overflow-hidden mb-6">
       <div class="divide-y divide-[#E5E9F2]">
-        <ReviewItem v-for="review in reviews" :key="review.id" :review="review" />
+        <ReviewItem
+          v-for="review in reviews"
+          :key="review.id"
+          :review="review"
+          :isOwnProfile="isOwnProfile"
+          @add-response="handleReviewResponse"
+        />
       </div>
     </div>
 
-    <div v-else class="py-10 text-center bg-[#F9F9F9] rounded-lg border border-[#E5E9F2]">
+    <!-- Сообщение об отсутствии отзывов -->
+    <div v-else class="py-10 text-center bg-[#F9F9F9] rounded-lg border border-[#E5E9F2] mb-6">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         class="h-12 w-12 mx-auto mb-3 text-[#656565]"
@@ -154,5 +201,13 @@ const ratingPercentages = computed(() => {
       <p class="text-[#656565] mb-2">Отзывов пока нет</p>
       <p class="text-sm text-[#656565]">Будьте первым, кто оставит отзыв</p>
     </div>
+
+    <!-- Форма добавления отзыва -->
+    <AddReview
+      v-if="!isOwnProfile"
+      :profileId="profileId"
+      :projects="availableProjects"
+      @review-added="handleReviewAdded"
+    />
   </div>
 </template>

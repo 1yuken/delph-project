@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
@@ -11,6 +12,8 @@ import { Portfolio } from './entities/portfolio.entity';
 
 @Injectable()
 export class PortfoliosService {
+  private readonly logger = new Logger(PortfoliosService.name);
+
   constructor(
     @InjectRepository(Portfolio)
     private portfolioRepository: Repository<Portfolio>,
@@ -34,7 +37,13 @@ export class PortfoliosService {
   }
 
   async findAllByUserId(userId: string) {
-    return await this.portfolioRepository.find({ where: { userId } });
+    this.logger.log(`Finding all portfolios for user ${userId}`);
+    const portfolios = await this.portfolioRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+    this.logger.log(`Found ${portfolios.length} portfolios for user ${userId}`);
+    return portfolios;
   }
 
   async findOne(id: number) {

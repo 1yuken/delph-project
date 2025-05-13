@@ -10,17 +10,27 @@ import {
   UploadedFile,
   UseGuards,
   Request,
+  Logger,
 } from '@nestjs/common';
 import { PortfoliosService } from './portfolios.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiConsumes,
+  ApiBody,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('portfolios')
 @Controller('portfolios')
 export class PortfoliosController {
+  private readonly logger = new Logger(PortfoliosController.name);
+
   constructor(private readonly portfoliosService: PortfoliosService) {}
 
   @Post()
@@ -52,9 +62,17 @@ export class PortfoliosController {
     );
   }
 
-  @Get()
-  findAll() {
-    return this.portfoliosService.findAll();
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get user portfolios by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'User portfolios',
+  })
+  async findUserPortfolios(@Param('userId') userId: string) {
+    this.logger.log(`Getting portfolios for user ${userId}`);
+    const portfolios = await this.portfoliosService.findAllByUserId(userId);
+    this.logger.log(`Found ${portfolios.length} portfolios for user ${userId}`);
+    return portfolios;
   }
 
   @Get('user')
@@ -67,6 +85,11 @@ export class PortfoliosController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.portfoliosService.findOne(+id);
+  }
+
+  @Get()
+  findAll() {
+    return this.portfoliosService.findAll();
   }
 
   @Patch(':id')

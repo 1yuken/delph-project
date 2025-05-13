@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -108,8 +108,7 @@ export const ordersApi = {
         clientId: orderData.clientId || null,
         status: orderData.status || 'open',
         budget: orderData.price.replace(/[^\d.-]/g, ''),
-        creationDate: new Date().toISOString(),
-        completitionDate: orderData.deadline,
+        completionDate: orderData.completionDate,
       }
 
       // Удаляем id из данных, если он есть
@@ -141,6 +140,43 @@ export const ordersApi = {
       console.error('Ошибка при обновлении статуса заказа:', error)
       throw error
     }
+  },
+}
+
+export const portfoliosApi = {
+  getAll: async () => {
+    const response = await api.get('/portfolios')
+    return response.data
+  },
+
+  getMyPortfolios: async () => {
+    const response = await api.get('/portfolios/user')
+    return response.data
+  },
+
+  getByUserId: async (userId) => {
+    console.log('Fetching portfolios for user:', userId)
+    const response = await api.get(`/users/${userId}/portfolios`)
+    console.log('Portfolios API response:', response)
+    return response.data
+  },
+
+  create: async (portfolioData) => {
+    const formData = new FormData()
+    formData.append('description', portfolioData.description)
+    formData.append('image', portfolioData.image)
+
+    const response = await api.post('/portfolios', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/portfolios/${id}`)
+    return response.data
   },
 }
 

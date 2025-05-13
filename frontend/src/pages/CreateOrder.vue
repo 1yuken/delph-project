@@ -127,10 +127,9 @@ const submitOrder = async () => {
       categories: item.value.categories || '',
       itemId: itemId,
       status: 'open',
-      creationDate: new Date().toISOString(),
-      completitionDate: new Date(orderForm.value.deadline).toISOString(),
       clientId: localStorage.getItem('userId') || null,
-      budget: orderForm.value.price.replace(/[^\d.-]/g, ''),
+      budget: orderForm.value.price.replace(/[^.-]/g, ''),
+      completionDate: new Date(orderForm.value.deadline).toISOString(),
       attachments: orderForm.value.attachments.map((file) => ({
         name: file.name,
         type: file.type,
@@ -372,9 +371,20 @@ onMounted(loadItem)
                       : 'border-[#E5E9F2] focus:border-[#0A65CC]'
                   "
                 />
-                <DollarSign
+                <svg
                   class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]"
-                />
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 3V21M6 7H15.5C17.9853 7 20 8.79086 20 11C20 13.2091 17.9853 15 15.5 15H6M6 11H17"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               </div>
               <p v-if="formErrors.price" class="mt-1 text-sm text-red-500">
                 {{ formErrors.price }}

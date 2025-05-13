@@ -3,16 +3,17 @@ import { reactive, computed } from 'vue'
 const state = reactive({
   isAuthenticated: false,
   username: '',
-  avatarUrl: '/avatar-default.jpg',
+  avatarUrl: '',
   userId: null,
 })
 
 export const useAuthStore = () => {
   const login = (userData) => {
+    console.log('AuthStore login - received userData:', userData)
+    
     state.isAuthenticated = true
     state.username = userData.name || 'Пользователь'
-    state.avatarUrl =
-      typeof userData.avatarUrl === 'string' ? userData.avatarUrl : '/avatar-default.jpg'
+    state.avatarUrl = userData.avatarUrl || '/avatar-default.jpg'
     state.userId = userData.id
 
     // Сохраняем данные в локальное хранилище
@@ -20,7 +21,13 @@ export const useAuthStore = () => {
     localStorage.setItem('username', state.username)
     localStorage.setItem('avatarUrl', state.avatarUrl)
     localStorage.setItem('userId', state.userId)
-    console.log('AuthStore login - avatarUrl:', state.avatarUrl)
+    
+    console.log('AuthStore login - state after update:', {
+      isAuthenticated: state.isAuthenticated,
+      username: state.username,
+      avatarUrl: state.avatarUrl,
+      userId: state.userId
+    })
   }
 
   const logout = () => {
@@ -32,7 +39,6 @@ export const useAuthStore = () => {
     localStorage.removeItem('username')
     localStorage.removeItem('avatarUrl')
     localStorage.removeItem('userId')
-    console.log('AuthStore logout - avatarUrl:', state.avatarUrl)
   }
 
   const checkAuth = () => {
@@ -41,27 +47,34 @@ export const useAuthStore = () => {
     const storedAvatarUrl = localStorage.getItem('avatarUrl')
     const storedUserId = localStorage.getItem('userId')
 
+    console.log('AuthStore checkAuth - stored data:', {
+      token,
+      storedUsername,
+      storedAvatarUrl,
+      storedUserId
+    })
+
     state.isAuthenticated = !!token
     state.username = storedUsername || ''
     state.avatarUrl = storedAvatarUrl || '/avatar-default.jpg'
     state.userId = storedUserId || null
-    console.log('AuthStore checkAuth - avatarUrl:', state.avatarUrl)
+
+    console.log('AuthStore checkAuth - state after update:', {
+      isAuthenticated: state.isAuthenticated,
+      username: state.username,
+      avatarUrl: state.avatarUrl,
+      userId: state.userId
+    })
   }
 
   const updateAvatar = (newAvatarUrl) => {
-    console.log('Updating avatar in store:', newAvatarUrl)
-    if (newAvatarUrl && typeof newAvatarUrl === 'string') {
-      if (state.avatarUrl !== newAvatarUrl) {
-        state.avatarUrl = newAvatarUrl
-        localStorage.setItem('avatarUrl', newAvatarUrl)
-        console.log('AuthStore updateAvatar - new value:', state.avatarUrl)
-      }
+    console.log('AuthStore updateAvatar - new value:', newAvatarUrl)
+    if (newAvatarUrl && typeof newAvatarUrl === 'string' && newAvatarUrl.trim() !== '') {
+      state.avatarUrl = newAvatarUrl
+      localStorage.setItem('avatarUrl', newAvatarUrl)
     } else {
-      if (state.avatarUrl !== '/avatar-default.jpg') {
-        state.avatarUrl = '/avatar-default.jpg'
-        localStorage.setItem('avatarUrl', '/avatar-default.jpg')
-        console.log('AuthStore updateAvatar - default value:', state.avatarUrl)
-      }
+      state.avatarUrl = '/avatar-default.jpg'
+      localStorage.setItem('avatarUrl', '/avatar-default.jpg')
     }
   }
 

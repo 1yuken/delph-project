@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   Calendar,
   Clock,
-  DollarSign,
   User,
   AlertCircle,
   CheckCircle,
@@ -16,8 +15,6 @@ import {
   Bookmark,
   Share2,
   Flag,
-  FileText,
-  MapPin,
   Briefcase,
   Award,
   Shield,
@@ -55,14 +52,10 @@ const fetchOrder = async () => {
       ...data,
       status: data.status || 'open',
       date: data.creationDate || new Date().toISOString(),
-      deadline: data.completitionDate || new Date().toISOString(),
+      deadline: data.completionDate || new Date().toISOString(),
       views: Math.floor(Math.random() * 500) + 50,
       responses: Math.floor(Math.random() * 20),
-      customerRating: (Math.random() * 2 + 3).toFixed(1),
-      customerReviews: Math.floor(Math.random() * 50) + 5,
-      customerCompletedProjects: Math.floor(Math.random() * 100) + 10,
-      location: 'Москва, Россия',
-      skills: ['JavaScript', 'Vue.js', 'HTML/CSS', 'Адаптивный дизайн', 'API интеграция'],
+      price: data.budget ? `${data.budget} ` : 'По договоренности',
       attachments: data.attachments || [],
     }
 
@@ -80,16 +73,17 @@ const fetchOrder = async () => {
 const fetchSimilarOrders = async () => {
   try {
     const data = await ordersApi.getAll()
-    // Фильтруем и берем только 3 случайных заказа
+    // Фильтруем заказы по категории и берем 3 последних
     similarOrders.value = data
-      .filter((item) => item.id !== order.value.id)
-      .sort(() => 0.5 - Math.random())
+      .filter((item) => item.id !== order.value.id && item.category === order.value.category)
+      .sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate))
       .slice(0, 3)
       .map((order) => ({
         ...order,
         status: order.status || 'open',
         date: order.creationDate || new Date().toISOString(),
-        deadline: order.completitionDate || new Date().toISOString(),
+        deadline: order.completionDate || new Date().toISOString(),
+        price: order.budget ? `${order.budget} ` : 'По договоренности',
       }))
   } catch (err) {
     console.error('Ошибка загрузки похожих заказов:', err)
@@ -98,8 +92,13 @@ const fetchSimilarOrders = async () => {
 
 // Форматирование даты
 const formatDate = (dateString) => {
+  if (!dateString) return 'Не указано'
   const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 }
 
 // Вычисляемое свойство для определения, истекает ли срок
@@ -134,6 +133,13 @@ const goToOrder = (orderId) => {
   router.push(`/order/${orderId}`)
 }
 
+// Переход в профиль заказчика
+const goToProfile = () => {
+  if (order.value?.client?.id) {
+    router.push(`/profile/${order.value.client.id}`)
+  }
+}
+
 // Возврат на предыдущую страницу
 const goBack = () => {
   router.go(-1)
@@ -155,27 +161,6 @@ const shareOrder = () => {
 const reportOrder = () => {
   // Здесь будет логика для жалобы на заказ
   alert('Функция жалобы на заказ будет реализована в будущем')
-}
-
-// Форматирование размера файла
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Б'
-  const k = 1024
-  const sizes = ['Б', 'КБ', 'МБ', 'ГБ']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-// Скачивание всех файлов
-const downloadAllFiles = () => {
-  order.value.attachments.forEach((file) => {
-    const link = document.createElement('a')
-    link.href = file.url
-    link.download = file.name
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  })
 }
 
 onMounted(fetchOrder)
@@ -262,12 +247,8 @@ onMounted(fetchOrder)
                       </span>
                     </div>
                     <div class="flex items-center gap-1 font-medium">
-                      <DollarSign class="w-4 h-4 text-[#0A65CC]" />
+                      <span class="text-[#0A65CC]">₽</span>
                       <span>{{ order.price }}</span>
-                    </div>
-                    <div class="flex items-center gap-1 text-[#656565]">
-                      <MapPin class="w-4 h-4" />
-                      <span>{{ order.location }}</span>
                     </div>
                   </div>
                 </div>
@@ -308,116 +289,7 @@ onMounted(fetchOrder)
             <div class="p-6">
               <h2 class="text-lg font-semibold text-[#222222] mb-4">Описание проекта</h2>
               <div class="prose max-w-none text-[#222222]">
-                <p class="mb-4">{{ order.description }}</p>
-                <p class="mb-4">
-                  Мы ищем опытного разработчика для создания современного веб-приложения. Проект
-                  включает в себя разработку пользовательского интерфейса, интеграцию с API и
-                  оптимизацию производительности.
-                </p>
-                <h3 class="text-base font-semibold mt-6 mb-2">Требования к исполнителю:</h3>
-                <ul class="list-disc pl-5 mb-4 space-y-1">
-                  <li>Опыт работы с современными технологиями разработки</li>
-                  <li>Знание HTML5, CSS3, JavaScript (ES6+)</li>
-                  <li>Опыт работы с REST API</li>
-                  <li>Понимание принципов адаптивного дизайна</li>
-                  <li>Умение работать с системами контроля версий (Git)</li>
-                </ul>
-                <h3 class="text-base font-semibold mt-6 mb-2">Ожидаемый результат:</h3>
-                <ul class="list-disc pl-5 mb-4 space-y-1">
-                  <li>Полностью функциональное веб-приложение</li>
-                  <li>Чистый, хорошо структурированный код</li>
-                  <li>Адаптивный дизайн для всех устройств</li>
-                  <li>Оптимизированная производительность</li>
-                </ul>
-                <p class="mt-6 text-[#656565]">
-                  <span class="font-medium text-[#222222]">Примечание:</span> Проект должен быть
-                  выполнен в соответствии с предоставленными макетами и техническим заданием. Все
-                  вопросы можно обсудить в процессе работы.
-                </p>
-              </div>
-
-              <!-- Навыки -->
-              <div class="mt-6">
-                <h3 class="text-base font-semibold mb-3">Требуемые навыки:</h3>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="(skill, index) in order.skills"
-                    :key="index"
-                    class="px-3 py-1.5 bg-[#F0F7FF] text-[#0A65CC] text-sm rounded-md"
-                  >
-                    {{ skill }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Вложения -->
-              <div
-                v-if="order.attachments && order.attachments.length > 0"
-                class="mt-6 p-4 bg-[#F9F9F9] rounded-lg"
-              >
-                <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-base font-semibold">Вложения ({{ order.attachments.length }})</h3>
-                  <button @click="downloadAllFiles" class="text-sm text-[#0A65CC] hover:underline">
-                    Скачать все
-                  </button>
-                </div>
-                <div class="space-y-2">
-                  <div
-                    v-for="(file, index) in order.attachments"
-                    :key="index"
-                    class="flex items-center justify-between p-3 bg-white rounded-md border border-[#E5E9F2]"
-                  >
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="w-10 h-10 bg-[#F0F7FF] rounded-md flex items-center justify-center text-[#0A65CC]"
-                      >
-                        <FileText class="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p class="font-medium text-[#222222]">{{ file.name }}</p>
-                        <p class="text-xs text-[#656565]">
-                          {{ file.type }}, {{ formatFileSize(file.size) }}
-                        </p>
-                      </div>
-                    </div>
-                    <a
-                      :href="file.url"
-                      target="_blank"
-                      class="text-[#0A65CC] hover:text-[#085BBA]"
-                      download
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M7 10L12 15L17 10"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M12 15V3"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
+                <p class="mb-4 whitespace-pre-line">{{ order.description }}</p>
               </div>
             </div>
           </div>
@@ -427,7 +299,7 @@ onMounted(fetchOrder)
             <div class="p-6 border-b border-[#E5E9F2]">
               <h2 class="text-lg font-semibold text-[#222222]">Похожие заказы</h2>
             </div>
-            <div class="divide-y divide-[#E5E9F2]">
+            <div v-if="similarOrders.length > 0" class="divide-y divide-[#E5E9F2]">
               <div
                 v-for="similarOrder in similarOrders"
                 :key="similarOrder.id"
@@ -435,7 +307,7 @@ onMounted(fetchOrder)
                 class="p-4 hover:bg-[#F0F7FF] cursor-pointer transition-colors"
               >
                 <div class="flex justify-between items-start">
-                  <div>
+                  <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
                       <span
                         class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
@@ -458,12 +330,13 @@ onMounted(fetchOrder)
                     </p>
                   </div>
                   <div class="flex items-center gap-1 font-medium whitespace-nowrap ml-4">
-                    <DollarSign class="w-4 h-4 text-[#0A65CC]" />
+                    <span class="text-[#0A65CC]">₽</span>
                     <span>{{ similarOrder.price }}</span>
                   </div>
                 </div>
               </div>
             </div>
+            <div v-else class="p-6 text-center text-[#656565]">Похожих заказов не найдено</div>
           </div>
         </div>
 
@@ -492,8 +365,8 @@ onMounted(fetchOrder)
               <div class="flex items-center gap-4 mb-4">
                 <div class="relative">
                   <img
-                    :src="order.avatar"
-                    alt="Аватар заказчика"
+                    :src="order.client?.avatarUrl || 'https://via.placeholder.com/64?text=?'"
+                    :alt="order.client?.username || 'User'"
                     class="w-16 h-16 rounded-full object-cover border border-[#E5E9F2]"
                     onerror="this.src='https://via.placeholder.com/64?text=?'"
                   />
@@ -502,10 +375,12 @@ onMounted(fetchOrder)
                   ></div>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-[#222222]">{{ order.customer }}</h3>
+                  <h3 class="font-semibold text-[#222222]">
+                    {{ order.client?.username || 'Unknown User' }}
+                  </h3>
                   <div class="flex items-center gap-1 text-[#656565] text-sm">
                     <span class="flex items-center">
-                      {{ order.customerRating }}
+                      {{ order.client?.rating || '0.0' }}
                       <svg
                         class="w-4 h-4 text-[#FFB800]"
                         viewBox="0 0 24 24"
@@ -517,9 +392,12 @@ onMounted(fetchOrder)
                         />
                       </svg>
                     </span>
-                    <span>({{ order.customerReviews }} отзывов)</span>
+                    <span>({{ order.client?.reviews || 0 }} отзывов)</span>
                   </div>
-                  <p class="text-sm text-[#656565] mt-1">На сайте с 2022 года</p>
+                  <p class="text-sm text-[#656565] mt-1">
+                    На сайте с
+                    {{ order.client?.createdAt ? formatDate(order.client.createdAt) : '2025' }} года
+                  </p>
                 </div>
               </div>
 
@@ -540,6 +418,7 @@ onMounted(fetchOrder)
 
               <div class="mt-6 flex flex-col gap-3">
                 <button
+                  @click="goToProfile"
                   class="w-full py-2.5 bg-white cursor-pointer border border-[#0A65CC] text-[#0A65CC] rounded-lg font-medium hover:bg-[#F0F7FF] transition-colors"
                 >
                   Посмотреть профиль

@@ -5,8 +5,9 @@ import Pencil from '@/icons/Pencil.vue'
 import X from '@/icons/X.vue'
 import Plus from '@/icons/Plus.vue'
 import Trash from '@/icons/Trash.vue'
+import { portfoliosApi } from '@/services/api'
 
-defineProps({
+const props = defineProps({
   projects: {
     type: Array,
     default: () => [],
@@ -14,6 +15,10 @@ defineProps({
   isEditable: {
     type: Boolean,
     default: false,
+  },
+  userId: {
+    type: String,
+    required: true,
   },
 })
 
@@ -44,13 +49,16 @@ const cancelEditing = () => {
 const handleImageUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
-    // Создаем FileReader для чтения файла
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      newProject.value.image = e.target.result // Сохраняем base64 строку
-    }
-    reader.readAsDataURL(file)
+    newProject.value.image = file
   }
+}
+
+const formatImagePath = (path) => {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  // Убираем ведущий слэш, если есть, чтобы не было двойного слэша
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  return `http://localhost:3000/${cleanPath}`
 }
 
 const addProject = async () => {
@@ -59,31 +67,33 @@ const addProject = async () => {
   try {
     isLoading.value = true
 
-    // Создаем новый проект
-    const newProjectData = {
-      id: Date.now(), // Используем timestamp как ID
+    const portfolioData = {
       description: newProject.value.title,
-      imageUrl: newProject.value.image, // Сохраняем base64 строку
-      views: 0,
+      image: newProject.value.image,
     }
 
-    // Получаем текущие проекты из localStorage или создаем пустой массив
-    const currentProjects = JSON.parse(localStorage.getItem('portfolio_projects') || '[]')
+    const response = await portfoliosApi.create(portfolioData)
+    console.log('Create portfolio response:', response)
 
-    // Добавляем новый проект
-    const updatedProjects = [...currentProjects, newProjectData]
+    // Update the projects list
+    const updatedProjects = [
+      ...props.projects,
+      {
+        id: response.id,
+        description: response.description,
+        imageUrl: formatImagePath(response.imagePath),
+        views: 0,
+      },
+    ]
 
-    // Сохраняем в localStorage
-    localStorage.setItem('portfolio_projects', JSON.stringify(updatedProjects))
-
-    // Обновляем состояние компонента
     emit('update:projects', updatedProjects)
 
-    // Сбрасываем форму
+    // Reset form
     newProject.value = {
       title: '',
       image: null,
     }
+    isEditing.value = false
   } catch (error) {
     console.error('Error adding project:', error)
   } finally {
@@ -94,17 +104,10 @@ const addProject = async () => {
 const deleteProject = async (projectId) => {
   try {
     isLoading.value = true
+    await portfoliosApi.delete(projectId)
 
-    // Получаем текущие проекты
-    const currentProjects = JSON.parse(localStorage.getItem('portfolio_projects') || '[]')
-
-    // Удаляем проект
-    const updatedProjects = currentProjects.filter((p) => p.id !== projectId)
-
-    // Сохраняем обновленный список
-    localStorage.setItem('portfolio_projects', JSON.stringify(updatedProjects))
-
-    // Обновляем состояние компонента
+    // Update the projects list
+    const updatedProjects = props.projects.filter((p) => p.id !== projectId)
     emit('update:projects', updatedProjects)
   } catch (error) {
     console.error('Error deleting project:', error)
@@ -123,12 +126,40 @@ const closeModal = () => {
   selectedProject.value = null
 }
 
-// Загружаем проекты при монтировании компонента
-onMounted(() => {
-  const savedProjects = JSON.parse(localStorage.getItem('portfolio_projects') || '[]')
-  emit('update:projects', savedProjects)
+// Load projects when component is mounted
+onMounted(async () => {
+  try {
+    console.log('Loading portfolios for user ID:', props.userId)
+    const response = await portfoliosApi.getByUserId(props.userId)
+    console.log('Get portfolios response:', response)
+
+    if (!response || !Array.isArray(response)) {
+      console.error('Invalid response format:', response)
+      return
+    }
+
+    const formattedProjects = response.map((project) => {
+      console.log('Processing project:', project)
+      return {
+        id: project.id,
+        description: project.description,
+        imageUrl: formatImagePath(project.imagePath),
+        views: 0,
+      }
+    })
+    console.log('Formatted projects:', formattedProjects)
+    emit('update:projects', formattedProjects)
+  } catch (error) {
+    console.error('Error loading projects:', error)
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    })
+  }
 })
 </script>
+
 <template>
   <div>
     <div class="flex items-center justify-between mb-3">
@@ -148,7 +179,9 @@ onMounted(() => {
         <h3 class="text-lg font-semibold text-[#222222] mb-3">Добавить новый проект</h3>
         <div class="space-y-3">
           <div>
-            <label for="project-title" class="block text-sm text-[#656565] mb-1">Название проекта</label>
+            <label for="project-title" class="block text-sm text-[#656565] mb-1"
+              >Название проекта</label
+            >
             <input
               id="project-title"
               v-model="newProject.title"
@@ -159,7 +192,9 @@ onMounted(() => {
             />
           </div>
           <div>
-            <label for="project-image" class="block text-sm text-[#656565] mb-1">Изображение проекта</label>
+            <label for="project-image" class="block text-sm text-[#656565] mb-1"
+              >Изображение проекта</label
+            >
             <input
               id="project-image"
               type="file"
@@ -201,6 +236,7 @@ onMounted(() => {
             :src="project.imageUrl"
             :alt="project.description"
             class="w-full h-48 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+            @error="console.error('Image load error:', project.imageUrl)"
           />
           <div
             class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end justify-center"
@@ -218,13 +254,24 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        <div 
-          v-if="projects.length === 0" 
+        <div
+          v-if="projects.length === 0"
           class="col-span-full text-center py-10 bg-white rounded-lg border border-dashed border-[#E5E9F2]"
         >
           <div class="flex flex-col items-center justify-center text-[#656565]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 text-[#0A65CC]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 mb-3 text-[#0A65CC]/30"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
             <p class="text-[#222222] font-medium mb-1">Нет добавленных проектов</p>
             <p class="text-sm">Добавьте свои работы в портфолио</p>
@@ -239,7 +286,10 @@ onMounted(() => {
       class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
       @click="closeModal"
     >
-      <div class="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden shadow-2xl" @click.stop>
+      <div
+        class="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden shadow-2xl"
+        @click.stop
+      >
         <button
           @click="closeModal"
           class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer bg-white rounded-full p-1 shadow-md z-10"
@@ -251,6 +301,7 @@ onMounted(() => {
             :src="selectedProject?.imageUrl"
             :alt="selectedProject?.description"
             class="w-full max-h-[70vh] object-contain"
+            @error="console.error('Modal image load error:', selectedProject?.imageUrl)"
           />
         </div>
         <div class="p-4 bg-white">

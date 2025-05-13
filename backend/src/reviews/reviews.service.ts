@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,6 +18,7 @@ export class ReviewsService {
   constructor(
     @InjectRepository(Review)
     private reviewsRepository: Repository<Review>,
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
   ) {}
 

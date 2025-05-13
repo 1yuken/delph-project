@@ -65,4 +65,11 @@ export class CreateOrderDto {
   @IsOptional()
   @IsNumber()
   budget?: number;
+
+  @ApiPropertyOptional({
+    description: 'Дата завершения заказа',
+    example: '2024-06-30T23:59:59.000Z',
+  })
+  @IsOptional()
+  completionDate?: Date;
 }

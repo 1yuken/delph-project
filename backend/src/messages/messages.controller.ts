@@ -13,6 +13,8 @@ import {
   UploadedFile,
   BadRequestException,
   Logger,
+  UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -31,6 +33,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MessageUploadDto } from './dto/message-upload.dto';
 import { Express } from 'express';
+import { MessagesGateway } from './messages.gateway';
 
 @ApiTags('Messages')
 @Controller('messages')
@@ -38,7 +41,10 @@ import { Express } from 'express';
 @ApiBearerAuth()
 export class MessagesController {
   private readonly logger = new Logger(MessagesController.name);
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(
+    private readonly messagesService: MessagesService,
+    private readonly messagesGateway: MessagesGateway,
+  ) {}
 
   @ApiOperation({ summary: 'Send a message' })
   @Post()
@@ -46,12 +52,89 @@ export class MessagesController {
     status: 201,
     description: 'The message has been successfully sent.',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error.',
+  })
   async create(@Request() req, @Body() createMessageDto: CreateMessageDto) {
-    this.logger.log(
-      `Creating message from ${req.user.userId} to ${createMessageDto.receiverId}`,
-    );
+    try {
+      this.logger.log(
+        `Creating message from ${req.user.userId} to ${createMessageDto.receiverId}`,
+      );
 
-    return this.messagesService.create(req.user, createMessageDto);
+      if (!req.user || !req.user.userId) {
+        this.logger.error('User not authenticated');
+        throw new UnauthorizedException('User not authenticated');
+      }
+
+      const result = await this.messagesService.create(
+        req.user,
+        createMessageDto,
+      );
+      this.logger.debug('Message created successfully:', result);
+
+      // Emit WebSocket events
+      const messageToSend = {
+        id: result.id,
+        content: result.content,
+        senderId: result.senderId,
+        receiverId: result.receiverId,
+        createdAt: result.createdAt,
+        sender: result.sender,
+        receiver: result.receiver,
+        isRead: result.isRead,
+      };
+
+      // Send to sender's room
+      this.messagesGateway.server
+        .to(`user_${req.user.userId}`)
+        .emit('message_sent', messageToSend);
+
+      // Send to receiver's room if online
+      const receiverSocket = this.messagesGateway.userSocketMap.get(
+        createMessageDto.receiverId,
+      );
+      if (receiverSocket) {
+        this.messagesGateway.server
+          .to(`user_${createMessageDto.receiverId}`)
+          .emit('new_message', messageToSend);
+      }
+
+      // Update chats for both users
+      const chats = await this.messagesService.getChats(req.user.userId);
+      this.messagesGateway.server
+        .to(`user_${req.user.userId}`)
+        .emit('chats_updated', chats);
+
+      if (receiverSocket) {
+        const receiverChats = await this.messagesService.getChats(
+          createMessageDto.receiverId,
+        );
+        this.messagesGateway.server
+          .to(`user_${createMessageDto.receiverId}`)
+          .emit('chats_updated', receiverChats);
+
+        // Get and send unread count for receiver
+        const unreadCount = await this.messagesService.getUnreadCount(
+          createMessageDto.receiverId,
+          req.user.userId,
+        );
+
+        this.messagesGateway.server
+          .to(`user_${createMessageDto.receiverId}`)
+          .emit('unread_count_updated', { unreadCount });
+      }
+
+      return result;
+    } catch (error) {
+      this.logger.error('Error in create message:', error);
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        `Failed to create message: ${error.message}`,
+      );
+    }
   }
 
   @ApiOperation({ summary: 'Send a message with an attachment' })

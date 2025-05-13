@@ -2,10 +2,18 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { itemsApi, ordersApi } from '@/services/api'
-import { 
-  Search, ArrowUp, ArrowDown, Clock, 
-  Calendar, DollarSign, ChevronLeft, ChevronRight,
-  AlertCircle, CheckCircle, XCircle, Clock3
+import {
+  Search,
+  ArrowUp,
+  ArrowDown,
+  Clock,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Clock3,
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -23,33 +31,33 @@ const itemsPerPage = 10
 
 // Статусы заказов и их цвета
 const orderStatuses = {
-  'new': { label: 'Новый', color: '#0A65CC', icon: AlertCircle },
-  'in_progress': { label: 'В работе', color: '#FF9800', icon: Clock3 },
-  'completed': { label: 'Выполнен', color: '#4CAF50', icon: CheckCircle },
-  'cancelled': { label: 'Отменен', color: '#F44336', icon: XCircle }
+  open: { label: 'Открыт', color: '#0A65CC', icon: AlertCircle },
+  in_progress: { label: 'В работе', color: '#FF9800', icon: Clock3 },
+  completed: { label: 'Выполнен', color: '#4CAF50', icon: CheckCircle },
+  cancelled: { label: 'Отменен', color: '#F44336', icon: XCircle },
 }
 
 const loadData = async () => {
   try {
     isLoading.value = true
-    
+
     // Загрузка данных о товаре
     item.value = await itemsApi.getOne(route.params.id)
 
     // Загрузка заказов
     const ordersData = await ordersApi.getByItemId(route.params.id)
-    
+
     // Преобразуем данные заказов в нужный формат
-    orders.value = ordersData.map(order => ({
+    orders.value = ordersData.map((order) => ({
       id: order.id,
+      title: order.title,
       description: order.description,
-      customer: order.clientName || 'Зак��зчик',
-      avatar: order.clientAvatar || '/avatar-full.jpg',
-      status: order.status || getRandomStatus(),
-      date: order.creationDate || getRandomDate(),
-      deadline: order.completitionDate || getRandomDeadline(),
-      price: order.budget ? `${order.budget} ₽` : 'По договоренности',
-      category: order.categories
+      client: order.client,
+      status: order.status || 'open',
+      date: order.creationDate || new Date().toISOString(),
+      deadline: order.completionDate || new Date().toISOString(),
+      price: order.budget ? `${order.budget} ` : 'По договоренности',
+      category: order.categories,
     }))
   } catch (error) {
     console.error('Ошибка загрузки данных:', error)
@@ -59,28 +67,6 @@ const loadData = async () => {
 }
 
 onMounted(loadData)
-
-// Получение случайного статуса для демонстрации
-const getRandomStatus = () => {
-  const statuses = Object.keys(orderStatuses)
-  return statuses[Math.floor(Math.random() * statuses.length)]
-}
-
-// Получение случайной даты для демонстрации
-const getRandomDate = () => {
-  const now = new Date()
-  const daysAgo = Math.floor(Math.random() * 30)
-  const date = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000)
-  return date.toISOString()
-}
-
-// Получение случайного дедлайна для демонстрации
-const getRandomDeadline = () => {
-  const now = new Date()
-  const daysAhead = Math.floor(Math.random() * 30) + 1
-  const date = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000)
-  return date.toISOString()
-}
 
 // Форматирование даты
 const formatDate = (dateString) => {
@@ -112,34 +98,36 @@ const toggleSort = (field) => {
 // Фильтрация и сортировка заказов
 const filteredOrders = computed(() => {
   let result = [...orders.value]
-  
+
   // Фильтрация по выбранной категории
   if (selectedLink.value !== 'Все') {
-    result = result.filter(order => order.category === selectedLink.value)
+    result = result.filter((order) => order.category === selectedLink.value)
   }
-  
+
   // Фильтрация по поисковому запросу
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter(order => 
-      order.description.toLowerCase().includes(query) || 
-      order.customer.toLowerCase().includes(query)
+    result = result.filter(
+      (order) =>
+        order.description.toLowerCase().includes(query) ||
+        order.client?.name.toLowerCase().includes(query),
     )
   }
-  
+
   // Сортировка
   result.sort((a, b) => {
     let comparison = 0
-    
+
     switch (sortField.value) {
       case 'description':
         comparison = a.description.localeCompare(b.description)
         break
-      case 'customer':
-        comparison = a.customer.localeCompare(b.customer)
+      case 'client':
+        comparison = a.client?.name.localeCompare(b.client?.name)
         break
       case 'price':
-        comparison = parseFloat(a.price.replace(/[^\d.-]/g, '')) - parseFloat(b.price.replace(/[^\d.-]/g, ''))
+        comparison =
+          parseFloat(a.price.replace(/[^\d.-]/g, '')) - parseFloat(b.price.replace(/[^\d.-]/g, ''))
         break
       case 'date':
         comparison = new Date(a.date) - new Date(b.date)
@@ -150,10 +138,10 @@ const filteredOrders = computed(() => {
       default:
         comparison = 0
     }
-    
+
     return sortDirection.value === 'asc' ? comparison : -comparison
   })
-  
+
   return result
 })
 
@@ -188,41 +176,51 @@ const goBack = () => {
     <div class="max-w-6xl mx-auto">
       <!-- Хлебные крошки и кнопка назад -->
       <div class="mb-6">
-        <button @click="goBack" class="flex items-center text-[#656565] hover:text-[#0A65CC] transition-colors text-sm">
+        <button
+          @click="goBack"
+          class="flex items-center text-[#656565] cursor-pointer hover:text-[#0A65CC] transition-colors text-sm"
+        >
           <ChevronLeft class="w-4 h-4 mr-1" />
           Назад
         </button>
       </div>
-      
+
       <div v-if="isLoading" class="flex justify-center items-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0A65CC]"></div>
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0A65CC]"
+        ></div>
       </div>
-      
-      <div v-else-if="item" class="bg-white rounded-lg shadow-sm border border-[#E5E9F2] overflow-hidden">
+
+      <div
+        v-else-if="item"
+        class="bg-white rounded-lg shadow-sm border border-[#E5E9F2] overflow-hidden"
+      >
         <!-- Заголовок и информация о товаре -->
         <div class="p-6 border-b border-[#E5E9F2]">
           <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-[#E5E9F2]">
-              <img 
-                :src="item.imageUrl" 
-                :alt="item.title" 
+            <div
+              class="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-[#E5E9F2]"
+            >
+              <img
+                :src="item.imageUrl"
+                :alt="item.title"
                 class="w-full h-full object-cover"
                 onerror="this.src='https://via.placeholder.com/80?text=?'"
               />
             </div>
-            
+
             <div class="flex-1">
               <h1 class="text-2xl md:text-3xl font-bold text-[#222222]">{{ item.title }}</h1>
               <p class="mt-2 text-[#656565] max-w-[800px]">
-                Здесь вы можете с гарантией безопасности выполнить заказ и найти исполнителей для любых задач.
-                Все проекты проверяются, и заказчики оплачивают работу только после подтверждения качества. У
-                нас вы можете найти фрилансеров с разными навыками — от разработки сайтов до графического
-                дизайна.
+                Здесь вы можете с гарантией безопасности выполнить заказ и найти исполнителей для
+                любых задач. Все проекты проверяются, и заказчики оплачивают работу только после
+                подтверждения качества. У нас вы можете найти фрилансеров с разными навыками — от
+                разработки сайтов до графического дизайна.
               </p>
             </div>
           </div>
         </div>
-        
+
         <!-- Фильтры и поиск -->
         <div class="p-6 border-b border-[#E5E9F2] bg-[#F9F9F9]">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -230,10 +228,12 @@ const goBack = () => {
             <div class="flex flex-wrap gap-2">
               <button
                 @click="selectLink('Все')"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                :class="selectedLink === 'Все' 
-                  ? 'bg-[#0A65CC] text-white' 
-                  : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
+                :class="
+                  selectedLink === 'Все'
+                    ? 'bg-[#0A65CC] text-white'
+                    : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'
+                "
               >
                 Все
               </button>
@@ -241,15 +241,17 @@ const goBack = () => {
                 v-for="(link, index) in item.links"
                 :key="index"
                 @click="selectLink(link)"
-                class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                :class="selectedLink === link 
-                  ? 'bg-[#0A65CC] text-white' 
-                  : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
+                :class="
+                  selectedLink === link
+                    ? 'bg-[#0A65CC] text-white'
+                    : 'bg-white text-[#656565] border border-[#E5E9F2] hover:border-[#0A65CC] hover:text-[#0A65CC]'
+                "
               >
                 {{ link }}
               </button>
             </div>
-            
+
             <div class="flex flex-col md:flex-row gap-3 items-center">
               <!-- Поиск -->
               <div class="relative w-full md:w-64">
@@ -259,137 +261,151 @@ const goBack = () => {
                   placeholder="Поиск заказов"
                   class="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E9F2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC] bg-white"
                 />
-                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]" />
+                <Search
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]"
+                />
               </div>
 
               <!-- Кнопка добавления предложения -->
               <button
                 @click="router.push(`/create-order/${item.id}?category=${selectedLink}`)"
-                class="whitespace-nowrap px-4 py-2 bg-[#0A65CC] text-white rounded-lg text-sm font-medium hover:bg-[#085BBA] transition-colors flex items-center gap-2"
+                class="whitespace-nowrap cursor-pointer px-4 py-2 bg-[#0A65CC] text-white rounded-lg text-sm font-medium hover:bg-[#085BBA] transition-colors flex items-center gap-2"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 5V19M5 12H19"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
                 Добавить предложение
               </button>
             </div>
           </div>
         </div>
-        
+
         <!-- Таблица заказов -->
         <div class="overflow-x-auto">
           <table class="w-full border-collapse">
             <thead class="bg-white">
               <tr class="border-b border-[#E5E9F2]">
                 <th class="py-4 px-6 text-left">
-                  <button 
-                    @click="toggleSort('description')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                  <button
+                    @click="toggleSort('description')"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Описание
                     <span class="ml-1">
-                      <ArrowUp 
-                        v-if="sortField === 'description' && sortDirection === 'asc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowUp
+                        v-if="sortField === 'description' && sortDirection === 'asc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
-                      <ArrowDown 
-                        v-else-if="sortField === 'description' && sortDirection === 'desc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowDown
+                        v-else-if="sortField === 'description' && sortDirection === 'desc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
                       <div v-else class="w-3 h-3"></div>
                     </span>
                   </button>
                 </th>
                 <th class="py-4 px-6 text-left">
-                  <button 
-                    @click="toggleSort('customer')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                  <button
+                    @click="toggleSort('client')"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Заказчик
                     <span class="ml-1">
-                      <ArrowUp 
-                        v-if="sortField === 'customer' && sortDirection === 'asc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowUp
+                        v-if="sortField === 'client' && sortDirection === 'asc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
-                      <ArrowDown 
-                        v-else-if="sortField === 'customer' && sortDirection === 'desc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowDown
+                        v-else-if="sortField === 'client' && sortDirection === 'desc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
                       <div v-else class="w-3 h-3"></div>
                     </span>
                   </button>
                 </th>
                 <th class="py-4 px-6 text-left">
-                  <button 
-                    @click="toggleSort('status')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                  <button
+                    @click="toggleSort('status')"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Статус
                     <span class="ml-1">
-                      <ArrowUp 
-                        v-if="sortField === 'status' && sortDirection === 'asc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowUp
+                        v-if="sortField === 'status' && sortDirection === 'asc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
-                      <ArrowDown 
-                        v-else-if="sortField === 'status' && sortDirection === 'desc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowDown
+                        v-else-if="sortField === 'status' && sortDirection === 'desc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
                       <div v-else class="w-3 h-3"></div>
                     </span>
                   </button>
                 </th>
                 <th class="py-4 px-6 text-left">
-                  <button 
-                    @click="toggleSort('date')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                  <button
+                    @click="toggleSort('date')"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Дата
                     <span class="ml-1">
-                      <ArrowUp 
-                        v-if="sortField === 'date' && sortDirection === 'asc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowUp
+                        v-if="sortField === 'date' && sortDirection === 'asc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
-                      <ArrowDown 
-                        v-else-if="sortField === 'date' && sortDirection === 'desc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowDown
+                        v-else-if="sortField === 'date' && sortDirection === 'desc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
                       <div v-else class="w-3 h-3"></div>
                     </span>
                   </button>
                 </th>
                 <th class="py-4 px-6 text-left">
-                  <button 
-                    @click="toggleSort('deadline')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                  <button
+                    @click="toggleSort('deadline')"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Срок
                     <span class="ml-1">
-                      <ArrowUp 
-                        v-if="sortField === 'deadline' && sortDirection === 'asc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowUp
+                        v-if="sortField === 'deadline' && sortDirection === 'asc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
-                      <ArrowDown 
-                        v-else-if="sortField === 'deadline' && sortDirection === 'desc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowDown
+                        v-else-if="sortField === 'deadline' && sortDirection === 'desc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
                       <div v-else class="w-3 h-3"></div>
                     </span>
                   </button>
                 </th>
                 <th class="py-4 px-6 text-left">
-                  <button 
-                    @click="toggleSort('price')" 
-                    class="flex items-center text-sm font-medium text-[#222222]"
+                  <button
+                    @click="toggleSort('price')"
+                    class="flex items-center text-sm font-medium text-[#222222] cursor-pointer"
                   >
                     Цена
                     <span class="ml-1">
-                      <ArrowUp 
-                        v-if="sortField === 'price' && sortDirection === 'asc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowUp
+                        v-if="sortField === 'price' && sortDirection === 'asc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
-                      <ArrowDown 
-                        v-else-if="sortField === 'price' && sortDirection === 'desc'" 
-                        class="w-3 h-3 text-[#0A65CC]" 
+                      <ArrowDown
+                        v-else-if="sortField === 'price' && sortDirection === 'desc'"
+                        class="w-3 h-3 text-[#0A65CC]"
                       />
                       <div v-else class="w-3 h-3"></div>
                     </span>
@@ -398,36 +414,38 @@ const goBack = () => {
               </tr>
             </thead>
             <tbody>
-              <tr 
-                v-for="order in paginatedOrders" 
+              <tr
+                v-for="order in paginatedOrders"
                 :key="order.id"
                 @click="goToOrderDetail(order.id)"
                 class="border-b border-[#E5E9F2] cursor-pointer transition-colors hover:bg-[#F0F7FF]"
               >
                 <td class="py-4 px-6">
-                  <div class="max-w-xs truncate">{{ order.description }}</div>
+                  <div class="max-w-xs truncate">{{ order.title }}</div>
                 </td>
                 <td class="py-4 px-6">
                   <div class="flex items-center gap-3">
                     <div class="relative">
-                      <img 
-                        :src="order.avatar" 
-                        :alt="order.customer" 
+                      <img
+                        :src="order.client?.avatarUrl || 'https://via.placeholder.com/32?text=?'"
+                        :alt="order.client?.username || 'User'"
                         class="w-8 h-8 rounded-full object-cover border border-[#E5E9F2]"
                         onerror="this.src='https://via.placeholder.com/32?text=?'"
                       />
-                      <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white"></div>
+                      <div
+                        class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white"
+                      ></div>
                     </div>
-                    <span>{{ order.customer }}</span>
+                    <span>{{ order.client?.username || 'Unknown User' }}</span>
                   </div>
                 </td>
                 <td class="py-4 px-6">
                   <div class="flex items-center">
-                    <span 
+                    <span
                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-                      :style="{ 
-                        backgroundColor: orderStatuses[order.status]?.color + '15', 
-                        color: orderStatuses[order.status]?.color 
+                      :style="{
+                        backgroundColor: orderStatuses[order.status]?.color + '15',
+                        color: orderStatuses[order.status]?.color,
                       }"
                     >
                       <component :is="getStatusIcon(order.status)" class="w-3 h-3" />
@@ -449,12 +467,25 @@ const goBack = () => {
                 </td>
                 <td class="py-4 px-6">
                   <div class="flex items-center gap-1 font-medium">
-                    <DollarSign class="w-4 h-4 text-[#0A65CC]" />
+                    <svg
+                      class="w-4 h-4 text-[#0A65CC]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 3V21M6 7H15.5C17.9853 7 20 8.79086 20 11C20 13.2091 17.9853 15 15.5 15H6M6 11H17"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
                     <span>{{ order.price }}</span>
                   </div>
                 </td>
               </tr>
-              
+
               <!-- Если нет заказов -->
               <tr v-if="paginatedOrders.length === 0">
                 <td colspan="6" class="py-12 text-center text-[#656565]">
@@ -468,48 +499,61 @@ const goBack = () => {
             </tbody>
           </table>
         </div>
-        
+
         <!-- Пагинация -->
-        <div v-if="filteredOrders.length > 0" class="p-4 flex justify-between items-center border-t border-[#E5E9F2]">
+        <div
+          v-if="filteredOrders.length > 0"
+          class="p-4 flex justify-between items-center border-t border-[#E5E9F2]"
+        >
           <div class="text-sm text-[#656565]">
-            Показано {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, filteredOrders.length) }} из {{ filteredOrders.length }} заказов
+            Показано {{ (currentPage - 1) * itemsPerPage + 1 }}-{{
+              Math.min(currentPage * itemsPerPage, filteredOrders.length)
+            }}
+            из {{ filteredOrders.length }} заказов
           </div>
-          
+
           <div class="flex items-center gap-2">
-            <button 
-              @click="goToPage(currentPage - 1)" 
+            <button
+              @click="goToPage(currentPage - 1)"
               class="p-2 rounded-md border border-[#E5E9F2] hover:border-[#0A65CC] transition-colors"
               :disabled="currentPage === 1"
               :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
             >
               <ChevronLeft class="w-4 h-4 text-[#656565]" />
             </button>
-            
+
             <div v-for="page in totalPages" :key="page" class="hidden md:block">
-              <button 
-                v-if="page === currentPage || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)"
+              <button
+                v-if="
+                  page === currentPage ||
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                "
                 @click="goToPage(page)"
                 class="w-8 h-8 flex items-center justify-center rounded-md text-sm transition-colors"
-                :class="currentPage === page 
-                  ? 'bg-[#0A65CC] text-white' 
-                  : 'text-[#656565] hover:bg-[#F0F7FF]'"
+                :class="
+                  currentPage === page
+                    ? 'bg-[#0A65CC] text-white'
+                    : 'text-[#656565] hover:bg-[#F0F7FF]'
+                "
               >
                 {{ page }}
               </button>
-              <span 
+              <span
                 v-else-if="page === currentPage - 2 || page === currentPage + 2"
                 class="w-8 h-8 flex items-center justify-center text-[#656565]"
               >
                 ...
               </span>
             </div>
-            
+
             <div class="md:hidden">
               <span class="text-sm text-[#656565]">{{ currentPage }} из {{ totalPages }}</span>
             </div>
-            
-            <button 
-              @click="goToPage(currentPage + 1)" 
+
+            <button
+              @click="goToPage(currentPage + 1)"
               class="p-2 rounded-md border border-[#E5E9F2] hover:border-[#0A65CC] transition-colors"
               :disabled="currentPage === totalPages"
               :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
@@ -519,13 +563,13 @@ const goBack = () => {
           </div>
         </div>
       </div>
-      
+
       <div v-else class="bg-white rounded-lg shadow-sm border border-[#E5E9F2] p-12 text-center">
         <AlertCircle class="w-16 h-16 text-[#E5E9F2] mx-auto mb-4" />
         <h2 class="text-xl font-bold text-[#222222] mb-2">Товар не найден</h2>
         <p class="text-[#656565] mb-6">Запрашиваемый товар не существует или был удален</p>
-        <button 
-          @click="router.push('/')" 
+        <button
+          @click="router.push('/')"
           class="px-4 py-2 bg-[#0A65CC] text-white rounded-md hover:bg-[#085BBA] transition-colors"
         >
           Вернуться на главную

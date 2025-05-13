@@ -1,245 +1,449 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { 
-  Search, Paperclip, Send, MoreVertical, 
-  Image, File, Smile, ChevronLeft, Check, CheckCheck, 
-  Filter, Bell
-} from 'lucide-vue-next';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import {
+  Search,
+  Paperclip,
+  Send,
+  MoreVertical,
+  Image,
+  File,
+  Smile,
+  ChevronLeft,
+  Check,
+  CheckCheck,
+  Filter,
+  Bell,
+} from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
+import { io } from 'socket.io-client'
+
+const route = useRoute()
+const authStore = useAuthStore()
+const myUserId = computed(() => authStore.userId.value)
 
 // Данные о чатах
-const chats = ref([
-  {
-    id: 1,
-    name: 'Элвин Николаенко',
-    avatar: '/random.jpg',
-    lastMessage: 'Да, я могу выполнить этот заказ в срок. Когда нужно сдать работу?',
-    time: '10:23',
-    unread: 2,
-    online: true,
-    isTyping: false
-  },
-  {
-    id: 2,
-    name: 'Эмран Минзатов',
-    avatar: '/random2.jpg',
-    lastMessage: 'Спасибо за оплату! Приступаю к работе.',
-    time: '09:45',
-    unread: 0,
-    online: true,
-    isTyping: true
-  },
-  {
-    id: 3,
-    name: 'Эдем Сейтумеров',
-    avatar: '/avatar-full.jpg',
-    lastMessage: 'Проект завершен. Жду ваших комментариев.',
-    time: 'Вчера',
-    unread: 0,
-    online: false,
-    isTyping: false
-  },
-  {
-    id: 4,
-    name: 'Илья Рудов',
-    avatar: '/random.jpg',
-    lastMessage: 'Можем обсудить детали проекта завтра в 15:00?',
-    time: 'Вчера',
-    unread: 0,
-    online: false,
-    isTyping: false
-  },
-  {
-    id: 5,
-    name: 'Эдем Асанов',
-    avatar: '/random2.jpg',
-    lastMessage: 'Отправил вам финальную версию дизайна.',
-    time: '21 мая',
-    unread: 0,
-    online: false,
-    isTyping: false
-  }
-]);
+const chats = ref([])
+const selectedUserId = ref(null)
 
 // Данные о сообщениях в текущем чате
-const messages = ref([
-  {
-    id: 1,
-    senderId: 1,
-    text: 'Здравствуйте! Я заинтересован в вашем предложении по разработке сайта. Можете рассказать подробнее о сроках и стоимости?',
-    time: '10:05',
-    status: 'read'
-  },
-  {
-    id: 2,
-    senderId: 'me',
-    text: 'Добрый день! Конечно, я могу разработать сайт в течение 2-3 недель. Стоимость будет зависеть от сложности и требуемого функционала. Какой тип сайта вам нужен?',
-    time: '10:10',
-    status: 'read'
-  },
-  {
-    id: 3,
-    senderId: 1,
-    text: 'Мне нужен интернет-магазин с каталогом товаров, корзиной и личным кабинетом пользователя. Также нужна интеграция с платежной системой.',
-    time: '10:15',
-    status: 'read'
-  },
-  {
-    id: 4,
-    senderId: 'me',
-    text: 'Понятно. Для такого проекта потребуется около 3 недель работы. Стоимость составит примерно 80,000 рублей. Я могу предоставить подробную смету с разбивкой по задачам.',
-    time: '10:18',
-    status: 'read'
-  },
-  {
-    id: 5,
-    senderId: 1,
-    text: 'Это звучит разумно. Можете ли вы начать работу уже на следующей неделе?',
-    time: '10:20',
-    status: 'read'
-  },
-  {
-    id: 6,
-    senderId: 'me',
-    text: 'Да, я могу начать в понедельник. Предлагаю сначала обсудить детали проекта и составить техническое задание. Это поможет избежать недопонимания и обеспечит точное соответствие результата вашим ожиданиям.',
-    time: '10:22',
-    status: 'read'
-  },
-  {
-    id: 7,
-    senderId: 1,
-    text: 'Да, я могу выполнить этот заказ в срок. Когда нужно сдать работу?',
-    time: '10:23',
-    status: 'delivered'
-  }
-]);
-
-// Активный чат
-const activeChat = ref(chats.value[0]);
+const messages = ref([])
 
 // Текст нового сообщения
-const newMessage = ref('');
+const newMessage = ref('')
 
 // Поисковый запрос
-const searchQuery = ref('');
+const searchQuery = ref('')
 
 // Мобильное представление
-const isMobileView = ref(false);
-const showChatList = ref(true);
+const isMobileView = ref(false)
+const showChatList = ref(true)
 
 // Фильтрованные чаты
 const filteredChats = computed(() => {
-  if (!searchQuery.value) return chats.value;
-  
-  const query = searchQuery.value.toLowerCase();
-  return chats.value.filter(chat => 
-    chat.name.toLowerCase().includes(query) || 
-    chat.lastMessage.toLowerCase().includes(query)
-  );
-});
+  if (!searchQuery.value) return chats.value
+  const query = searchQuery.value.toLowerCase()
+  return chats.value.filter((chat) => {
+    const name = chat.name || ''
+    const lastMessage = chat.lastMessage || ''
+    return name.toLowerCase().includes(query) || lastMessage.toLowerCase().includes(query)
+  })
+})
 
 // Общее количество непрочитанных сообщений
 const totalUnread = computed(() => {
-  return chats.value.reduce((sum, chat) => sum + chat.unread, 0);
-});
+  return chats.value.reduce((sum, chat) => sum + (chat.unread || 0), 0)
+})
 
-// Выбор чата
-const selectChat = (chat) => {
-  activeChat.value = chat;
-  // Сбрасываем счетчик непрочитанных сообщений
-  chat.unread = 0;
-  
-  // На мобильных устройствах переключаемся на чат
-  if (isMobileView.value) {
-    showChatList.value = false;
+// Получить данные пользователя для заглушки, если чата нет
+const userInfo = ref(null)
+
+watch(selectedUserId, async (newId) => {
+  if (!newId) {
+    userInfo.value = null
+    return
   }
-};
-
-// Отправка сообщения
-const sendMessage = () => {
-  if (!newMessage.value.trim()) return;
-  
-  // Добавляем новое сообщение
-  messages.value.push({
-    id: messages.value.length + 1,
-    senderId: 'me',
-    text: newMessage.value,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    status: 'sent'
-  });
-  
-  // Обновляем последнее сообщение в чате
-  activeChat.value.lastMessage = newMessage.value;
-  activeChat.value.time = 'Сейчас';
-  
-  // Очищаем поле ввода
-  newMessage.value = '';
-  
-  // Имитация ответа (для демонстрации)
-  setTimeout(() => {
-    // Обновляем статус отправленного сообщения
-    messages.value[messages.value.length - 1].status = 'delivered';
-    
-    // Через некоторое время собеседник печатает
-    activeChat.value.isTyping = true;
-    
-    // Через некоторое время приходит ответ
-    setTimeout(() => {
-      activeChat.value.isTyping = false;
-      messages.value.push({
-        id: messages.value.length + 1,
-        senderId: activeChat.value.id,
-        text: 'Спасибо за информацию! Я рассмотрю ваше предложение и свяжусь с вами в ближайшее время.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: 'delivered'
-      });
-      
-      // Обновляем последнее сообщение в чате
-      activeChat.value.lastMessage = 'Спасибо за информацию! Я рассмотрю ваше предложение и свяжусь с вами в ближайшее время.';
-      activeChat.value.time = 'Сейчас';
-      
-      // Если чат не активен, увеличиваем счетчик непрочитанных
-      if (activeChat.value.id !== chats.value[0].id) {
-        chats.value[0].unread += 1;
+  const chat = chats.value.find((c) => c.userId === newId)
+  if (!chat) {
+    try {
+      const response = await axios.get(`http://localhost:3000/users/${newId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+      userInfo.value = {
+        name: response.data.name || response.data.username || 'Пользователь',
+        avatar: response.data.avatarUrl || 'https://via.placeholder.com/48?text=?',
+        online: false,
       }
-    }, 3000);
-  }, 1000);
-};
+    } catch {
+      userInfo.value = {
+        name: 'Пользователь',
+        avatar: 'https://via.placeholder.com/48?text=?',
+        online: false,
+      }
+    }
+  } else {
+    userInfo.value = null
+  }
+})
+
+function getCompanionId(chat) {
+  return String(chat.user1Id) === String(myUserId.value) ? chat.user2Id : chat.user1Id
+}
+
+const userPlaceholder = computed(() => {
+  if (!selectedUserId.value) return null
+  const chat = chats.value.find((c) => getCompanionId(c) == selectedUserId.value)
+  if (chat) return chat
+  if (userInfo.value) return { ...userInfo.value, userId: selectedUserId.value }
+  return {
+    userId: selectedUserId.value,
+    name: 'Пользователь',
+    avatar: 'https://via.placeholder.com/48?text=?',
+    online: false,
+  }
+})
+
+const isMyMessage = (message) => String(message.senderId) === String(myUserId.value)
+
+const messagesContainer = ref(null)
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  })
+}
+
+function formatTime(date) {
+  const d = new Date(date)
+  d.setHours(d.getHours() + 3) // Москва = UTC+3
+  return d.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+// Получить сообщения с выбранным пользователем
+async function fetchMessages() {
+  if (!selectedUserId.value) return
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/messages?userId=${selectedUserId.value}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      },
+    )
+    // Преобразуем сообщения в нужный формат
+    messages.value = (response.data || []).map((message) => ({
+      ...message,
+      time: formatTime(message.createdAt),
+      status: 'sent',
+    }))
+    scrollToBottom()
+  } catch (error) {
+    console.error('Error fetching messages:', error)
+    messages.value = []
+  }
+}
+
+// Отправить сообщение
+async function sendMessage() {
+  if (!newMessage.value.trim() || !selectedUserId.value) return
+
+  try {
+    console.log('Sending message to:', selectedUserId.value)
+
+    // Отправляем сообщение через WebSocket
+    socket.value.emit('send_message', {
+      content: newMessage.value,
+      receiverId: selectedUserId.value,
+    })
+
+    // Очищаем поле ввода
+    newMessage.value = ''
+    nextTick(() => scrollToBottom())
+  } catch (error) {
+    console.error('Error sending message:', error)
+  }
+}
+
+// Выбрать чат
+function selectChat(companionId) {
+  selectedUserId.value = companionId
+}
 
 // Возврат к списку чатов на мобильных устройствах
 const backToList = () => {
-  showChatList.value = true;
-};
+  showChatList.value = true
+}
 
-// Проверка размера экрана при загрузке и изменении
-const checkScreenSize = () => {
-  isMobileView.value = window.innerWidth < 768;
-  showChatList.value = isMobileView.value ? true : true;
-};
+const socket = ref(null)
 
-// Инициализация при монтировании компонента
-const initComponent = () => {
-  checkScreenSize();
-  window.addEventListener('resize', checkScreenSize);
-};
+// Функция для обогащения данных чатов информацией о пользователях
+async function enrichChatsWithUserInfo() {
+  for (const chat of chats.value) {
+    const companionId = getCompanionId(chat)
+    try {
+      const response = await axios.get(`http://localhost:3000/users/${companionId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+      chat.name = response.data.name || response.data.username || 'Пользователь'
+      chat.avatar = response.data.avatarUrl || 'https://via.placeholder.com/48?text=?'
+      chat.userId = companionId
+      chat.lastMessage = chat.lastMessageContent || ''
+      chat.time = formatTime(chat.updatedAt)
+      chat.unread = chat.unreadCount || 0
+    } catch (error) {
+      console.error(`Error fetching user info for ${companionId}:`, error)
+      chat.name = 'Пользователь'
+      chat.avatar = 'https://via.placeholder.com/48?text=?'
+      chat.userId = companionId
+      chat.lastMessage = chat.lastMessageContent || ''
+      chat.time = formatTime(chat.updatedAt)
+      chat.unread = chat.unreadCount || 0
+    }
+  }
+}
 
-// Очистка при размонтировании компонента
-const cleanupComponent = () => {
-  window.removeEventListener('resize', checkScreenSize);
-};
+// Добавляем функцию для загрузки чатов
+async function fetchChats() {
+  try {
+    const response = await axios.get('http://localhost:3000/messages/chats', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+    chats.value = response.data || []
+    await enrichChatsWithUserInfo()
+  } catch (error) {
+    console.error('Error fetching chats:', error)
+    chats.value = []
+  }
+}
 
-// Хуки жизненного цикла
-onMounted(initComponent);
-onUnmounted(cleanupComponent);
+// Инициализация сокета
+const initializeSocket = () => {
+  try {
+    if (!localStorage.getItem('token')) {
+      console.error('No token found')
+      return
+    }
+
+    socket.value = io('http://localhost:3000', {
+      auth: { token: localStorage.getItem('token') },
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    })
+
+    socket.value.on('connect', () => {
+      console.log('Socket connected')
+    })
+
+    socket.value.on('disconnect', () => {
+      console.log('Socket disconnected')
+    })
+
+    socket.value.on('error', (error) => {
+      console.error('Socket error:', error)
+    })
+
+    // Обработка отправленного сообщения
+    socket.value.on('message_sent', (message) => {
+      console.log('Message sent event received:', message)
+      if (!message || !message.id) {
+        console.error('Invalid message data received:', message)
+        return
+      }
+
+      // Проверяем, относится ли сообщение к текущему чату
+      const isRelevantMessage =
+        selectedUserId.value &&
+        ((String(message.senderId) === String(selectedUserId.value) &&
+          String(message.receiverId) === String(myUserId.value)) ||
+          (String(message.senderId) === String(myUserId.value) &&
+            String(message.receiverId) === String(selectedUserId.value)))
+
+      if (isRelevantMessage) {
+        console.log('Adding sent message to current chat:', message)
+        // Проверяем, нет ли уже такого сообщения
+        const messageExists = messages.value.some((m) => m.id === message.id)
+        if (!messageExists) {
+          // Форматируем сообщение перед добавлением
+          const formattedMessage = {
+            ...message,
+            time: formatTime(message.createdAt),
+            status: 'sent',
+          }
+          messages.value = [...messages.value, formattedMessage]
+          nextTick(() => scrollToBottom())
+        }
+      }
+    })
+
+    // Обработка нового сообщения
+    socket.value.on('new_message', (message) => {
+      console.log('New message event received:', message)
+      if (!message || !message.id) {
+        console.error('Invalid message data received:', message)
+        return
+      }
+
+      // Проверяем, относится ли сообщение к текущему чату
+      const isRelevantMessage =
+        selectedUserId.value &&
+        ((String(message.senderId) === String(selectedUserId.value) &&
+          String(message.receiverId) === String(myUserId.value)) ||
+          (String(message.senderId) === String(myUserId.value) &&
+            String(message.receiverId) === String(selectedUserId.value)))
+
+      if (isRelevantMessage) {
+        console.log('Adding new message to current chat:', message)
+        // Проверяем, нет ли уже такого сообщения
+        const messageExists = messages.value.some((m) => m.id === message.id)
+        if (!messageExists) {
+          // Форматируем сообщение перед добавлением
+          const formattedMessage = {
+            ...message,
+            time: formatTime(message.createdAt),
+            status: 'sent',
+          }
+          messages.value = [...messages.value, formattedMessage]
+          nextTick(() => scrollToBottom())
+        }
+        // Если чат открыт — сразу сбрасываем счетчик
+        if (socket.value && selectedUserId.value) {
+          socket.value.emit('mark_as_read', { userId: selectedUserId.value })
+        }
+      }
+    })
+
+    // Обработка обновления непрочитанных сообщений
+    socket.value.on('unread_count_updated', (data) => {
+      console.log('Unread count updated event received:', data)
+      if (data && typeof data.unreadCount === 'number') {
+        // Обновляем счетчик непрочитанных сообщений в соответствующем чате
+        const chatIndex = chats.value.findIndex(
+          (chat) => String(getCompanionId(chat)) === String(selectedUserId.value),
+        )
+        if (chatIndex !== -1) {
+          chats.value[chatIndex].unread = data.unreadCount
+          // Обновляем общее количество непрочитанных сообщений
+          totalUnread.value = chats.value.reduce((sum, chat) => sum + (chat.unread || 0), 0)
+        }
+      }
+    })
+
+    // Обработка обновления списка чатов
+    socket.value.on('chats_updated', (updatedChats) => {
+      console.log('Chats updated event received:', updatedChats)
+      if (Array.isArray(updatedChats)) {
+        // Сохраняем текущие значения unread перед обновлением
+        const currentUnreadValues = new Map(
+          chats.value.map((chat) => [String(getCompanionId(chat)), chat.unread || 0]),
+        )
+
+        chats.value = updatedChats
+
+        // Восстанавливаем значения unread из обновленных чатов
+        chats.value.forEach((chat) => {
+          const companionId = String(getCompanionId(chat))
+          chat.unread = currentUnreadValues.get(companionId) || 0
+        })
+
+        // Обновляем общее количество непрочитанных сообщений
+        totalUnread.value = chats.value.reduce((sum, chat) => sum + (chat.unread || 0), 0)
+        enrichChatsWithUserInfo()
+      }
+    })
+
+    // Обработка сброса непрочитанных сообщений после прочтения
+    socket.value.on('messages_marked_read', (data) => {
+      if (data && data.otherUserId) {
+        const chatIndex = chats.value.findIndex(
+          (chat) => String(getCompanionId(chat)) === String(data.otherUserId),
+        )
+        if (chatIndex !== -1) {
+          chats.value[chatIndex].unread = 0
+          totalUnread.value = chats.value.reduce((sum, chat) => sum + (chat.unread || 0), 0)
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Error initializing socket:', error)
+  }
+}
+
+// При монтировании компонента
+onMounted(() => {
+  // Загружаем чаты при монтировании компонента
+  fetchChats()
+
+  // Инициализируем сокет
+  initializeSocket()
+})
+
+// При размонтировании компонента
+onUnmounted(() => {
+  if (socket.value) {
+    socket.value.disconnect()
+  }
+})
+
+// Загружаем сообщения при смене выбранного чата
+watch(selectedUserId, (newId) => {
+  fetchMessages()
+  if (socket.value && newId) {
+    socket.value.emit('mark_as_read', { userId: newId })
+  }
+})
+
+// Функция для выбора чата или начала нового диалога
+async function selectOrStartChat(userId) {
+  selectedUserId.value = userId
+  await fetchMessages()
+}
+
+// Следим за изменениями query параметров
+watch(
+  () => route.query.userId,
+  (newUserId) => {
+    if (newUserId) {
+      selectOrStartChat(Number(newUserId))
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  chats,
+  () => {
+    enrichChatsWithUserInfo()
+  },
+  { immediate: true },
+)
+
+// Для сообщений: новые внизу
+const orderedMessages = computed(() => {
+  return [...messages.value].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+})
 </script>
 
 <template>
   <div class="bg-[#F9F9F9] py-6 px-4 min-h-screen">
-    <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-[#E5E9F2]">
+    <div
+      class="max-w-6xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-[#E5E9F2]"
+    >
       <div class="flex h-[calc(100vh-120px)] min-h-[500px]">
         <!-- Список чатов (скрывается на мобильных при просмотре чата) -->
-        <div 
-          v-if="showChatList || !isMobileView" 
+        <div
+          v-if="showChatList || !isMobileView"
           class="w-full md:w-1/3 lg:w-1/4 border-r border-[#E5E9F2] flex flex-col"
         >
           <!-- Заголовок и поиск -->
@@ -247,8 +451,8 @@ onUnmounted(cleanupComponent);
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
                 <h1 class="text-xl font-bold text-[#222222]">Сообщения</h1>
-                <span 
-                  v-if="totalUnread > 0" 
+                <span
+                  v-if="totalUnread > 0"
                   class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-[#0A65CC] rounded-full"
                 >
                   {{ totalUnread }}
@@ -270,48 +474,54 @@ onUnmounted(cleanupComponent);
                 placeholder="Поиск сообщений"
                 class="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E9F2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC]"
               />
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]" />
+              <Search
+                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]"
+              />
             </div>
           </div>
-          
+
           <!-- Список чатов -->
           <div class="flex-1 overflow-y-auto">
             <div v-if="filteredChats.length === 0" class="p-4 text-center text-[#656565]">
               Чаты не найдены
             </div>
-            <div 
-              v-for="chat in filteredChats" 
-              :key="chat.id"
-              @click="selectChat(chat)"
+            <div
+              v-for="chat in filteredChats"
+              :key="getCompanionId(chat)"
+              @click="selectChat(getCompanionId(chat))"
               class="p-3 border-b border-[#E5E9F2] cursor-pointer transition-colors hover:bg-[#F9F9F9]"
-              :class="{ 'bg-[#F0F7FF]': activeChat.id === chat.id }"
+              :class="{ 'bg-[#F0F7FF]': selectedUserId == getCompanionId(chat) }"
             >
               <div class="flex items-center gap-3">
                 <!-- Аватар с индикатором онлайн -->
                 <div class="relative">
-                  <img 
-                    :src="chat.avatar" 
-                    :alt="chat.name"
+                  <img
+                    :src="chat.avatar || 'https://via.placeholder.com/48?text=?'"
+                    :alt="chat.name || 'Пользователь'"
                     class="w-12 h-12 rounded-full object-cover border border-[#E5E9F2]"
                     onerror="this.src='https://via.placeholder.com/48?text=?'"
                   />
-                  <div 
-                    v-if="chat.online" 
+                  <div
+                    v-if="chat.online"
                     class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"
                   ></div>
                 </div>
-                
+
                 <!-- Информация о чате -->
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between items-start">
-                    <h3 class="font-medium text-[#222222] truncate">{{ chat.name }}</h3>
-                    <span class="text-xs text-[#656565] whitespace-nowrap ml-2">{{ chat.time }}</span>
+                    <h3 class="font-medium text-[#222222] truncate">
+                      {{ chat.name || 'Пользователь' }}
+                    </h3>
+                    <span class="text-xs text-[#656565] whitespace-nowrap ml-2">{{
+                      chat.time
+                    }}</span>
                   </div>
                   <div class="flex justify-between items-center mt-1">
                     <p v-if="chat.isTyping" class="text-sm text-[#0A65CC] italic">печатает...</p>
                     <p v-else class="text-sm text-[#656565] truncate">{{ chat.lastMessage }}</p>
-                    <span 
-                      v-if="chat.unread > 0" 
+                    <span
+                      v-if="chat.unread > 0"
                       class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-[#0A65CC] rounded-full ml-2"
                     >
                       {{ chat.unread }}
@@ -322,46 +532,45 @@ onUnmounted(cleanupComponent);
             </div>
           </div>
         </div>
-        
+
         <!-- Область чата -->
-        <div 
-          v-if="!showChatList || !isMobileView" 
-          class="w-full md:w-2/3 lg:w-3/4 flex flex-col"
-        >
+        <div v-if="selectedUserId" class="w-full md:w-2/3 lg:w-3/4 flex flex-col">
           <!-- Заголовок чата -->
           <div class="p-4 border-b border-[#E5E9F2] flex items-center justify-between">
             <div class="flex items-center gap-3">
               <!-- Кнопка возврата на мобильных -->
-              <button 
-                v-if="isMobileView" 
+              <button
+                v-if="isMobileView"
                 @click="backToList"
                 class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors"
               >
                 <ChevronLeft class="w-5 h-5 text-[#656565]" />
               </button>
-              
+
               <!-- Информация о собеседнике -->
               <div class="flex items-center gap-3">
                 <div class="relative">
-                  <img 
-                    :src="activeChat.avatar" 
-                    :alt="activeChat.name"
+                  <img
+                    :src="userPlaceholder.avatar"
+                    :alt="userPlaceholder.name"
                     class="w-10 h-10 rounded-full object-cover border border-[#E5E9F2]"
                     onerror="this.src='https://via.placeholder.com/40?text=?'"
                   />
-                  <div 
-                    v-if="activeChat.online" 
+                  <div
+                    v-if="userPlaceholder.online"
                     class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"
                   ></div>
                 </div>
                 <div>
-                  <h3 class="font-medium text-[#222222]">{{ activeChat.name }}</h3>
-                  <p v-if="activeChat.online" class="text-xs text-green-500">Онлайн</p>
+                  <h3 class="font-medium text-[#222222]">
+                    {{ userPlaceholder.name }}
+                  </h3>
+                  <p v-if="userPlaceholder.online" class="text-xs text-green-500">Онлайн</p>
                   <p v-else class="text-xs text-[#656565]">Был(а) недавно</p>
                 </div>
               </div>
             </div>
-            
+
             <!-- Действия с чатом -->
             <div class="flex items-center gap-2">
               <button class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors">
@@ -369,69 +578,87 @@ onUnmounted(cleanupComponent);
               </button>
             </div>
           </div>
-          
+
           <!-- История сообщений -->
-          <div class="flex-1 p-4 overflow-y-auto bg-[#F9F9F9]">
-            <div v-for="message in messages" :key="message.id" class="mb-4">
+          <div class="flex-1 p-4 overflow-y-auto bg-[#F9F9F9]" ref="messagesContainer">
+            <div v-for="message in orderedMessages" :key="message.id" class="mb-4">
               <!-- Входящее сообщение -->
-              <div 
-                v-if="message.senderId !== 'me'" 
-                class="flex items-start gap-2 max-w-[80%]"
-              >
-                <img 
-                  :src="activeChat.avatar" 
-                  :alt="activeChat.name"
+              <div v-if="!isMyMessage(message)" class="flex items-start gap-2 max-w-[80%]">
+                <img
+                  :src="
+                    chats.find((c) => c.userId === message.senderId)?.avatar ||
+                    userPlaceholder.avatar
+                  "
+                  :alt="
+                    chats.find((c) => c.userId === message.senderId)?.name || userPlaceholder.name
+                  "
                   class="w-8 h-8 rounded-full object-cover mt-1"
                   onerror="this.src='https://via.placeholder.com/32?text=?'"
                 />
                 <div>
-                  <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm border border-[#E5E9F2]">
-                    <p class="text-[#222222]">{{ message.text }}</p>
+                  <div
+                    class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm border border-[#E5E9F2]"
+                  >
+                    <p class="text-[#222222]">{{ message.content }}</p>
                   </div>
                   <div class="flex items-center mt-1 ml-1">
                     <span class="text-xs text-[#656565]">{{ message.time }}</span>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Исходящее сообщение -->
-              <div 
-                v-else 
-                class="flex items-start gap-2 max-w-[80%] ml-auto flex-row-reverse"
-              >
+              <div v-else class="flex items-start gap-2 max-w-[80%] ml-auto flex-row-reverse">
                 <div>
                   <div class="bg-[#F0F7FF] p-3 rounded-lg rounded-tr-none shadow-sm">
-                    <p class="text-[#222222]">{{ message.text }}</p>
+                    <p class="text-[#222222]">{{ message.content }}</p>
                   </div>
                   <div class="flex items-center justify-end gap-1 mt-1 mr-1">
                     <span class="text-xs text-[#656565]">{{ message.time }}</span>
                     <!-- Статус сообщения -->
                     <Check v-if="message.status === 'sent'" class="w-3 h-3 text-[#656565]" />
-                    <CheckCheck v-else-if="message.status === 'delivered'" class="w-3 h-3 text-[#656565]" />
-                    <CheckCheck v-else-if="message.status === 'read'" class="w-3 h-3 text-[#0A65CC]" />
+                    <CheckCheck
+                      v-else-if="message.status === 'delivered'"
+                      class="w-3 h-3 text-[#656565]"
+                    />
+                    <CheckCheck
+                      v-else-if="message.status === 'read'"
+                      class="w-3 h-3 text-[#0A65CC]"
+                    />
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- Индикатор печати -->
-            <div v-if="activeChat.isTyping" class="flex items-start gap-2 max-w-[80%] mb-4">
-              <img 
-                :src="activeChat.avatar" 
-                :alt="activeChat.name"
+            <div
+              v-if="chats.find((c) => c.userId === selectedUserId)?.isTyping"
+              class="flex items-start gap-2 max-w-[80%] mb-4"
+            >
+              <img
+                :src="chats.find((c) => c.userId === selectedUserId)?.avatar"
+                :alt="chats.find((c) => c.userId === selectedUserId)?.name"
                 class="w-8 h-8 rounded-full object-cover mt-1"
                 onerror="this.src='https://via.placeholder.com/32?text=?'"
               />
-              <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm border border-[#E5E9F2] min-w-[60px]">
+              <div
+                class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm border border-[#E5E9F2] min-w-[60px]"
+              >
                 <div class="flex gap-1">
                   <div class="w-2 h-2 bg-[#656565] rounded-full animate-bounce"></div>
-                  <div class="w-2 h-2 bg-[#656565] rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                  <div class="w-2 h-2 bg-[#656565] rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                  <div
+                    class="w-2 h-2 bg-[#656565] rounded-full animate-bounce"
+                    style="animation-delay: 0.2s"
+                  ></div>
+                  <div
+                    class="w-2 h-2 bg-[#656565] rounded-full animate-bounce"
+                    style="animation-delay: 0.4s"
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Поле ввода сообщения -->
           <div class="p-3 border-t border-[#E5E9F2] bg-white">
             <div class="flex items-center gap-2">
@@ -439,14 +666,18 @@ onUnmounted(cleanupComponent);
                 <button class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors">
                   <Paperclip class="w-5 h-5 text-[#656565]" />
                 </button>
-                <button class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors hidden sm:block">
+                <button
+                  class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors hidden sm:block"
+                >
                   <Image class="w-5 h-5 text-[#656565]" />
                 </button>
-                <button class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors hidden sm:block">
+                <button
+                  class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors hidden sm:block"
+                >
                   <File class="w-5 h-5 text-[#656565]" />
                 </button>
               </div>
-              
+
               <div class="flex-1 relative">
                 <input
                   v-model="newMessage"
@@ -455,12 +686,14 @@ onUnmounted(cleanupComponent);
                   class="w-full px-4 py-2 text-sm border border-[#E5E9F2] rounded-full focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC]"
                   @keyup.enter="sendMessage"
                 />
-                <button class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#F0F7FF] transition-colors">
+                <button
+                  class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#F0F7FF] transition-colors"
+                >
                   <Smile class="w-5 h-5 text-[#656565]" />
                 </button>
               </div>
-              
-              <button 
+
+              <button
                 @click="sendMessage"
                 class="p-2 rounded-full bg-[#0A65CC] hover:bg-[#085BBA] transition-colors"
               >
@@ -494,7 +727,8 @@ onUnmounted(cleanupComponent);
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {

@@ -49,16 +49,28 @@ const login = async () => {
       },
     )
 
+    console.log('Server response:', response.data)
+
     // Проверяем структуру ответа и извлекаем нужные данные
     const userData = {
       token: response.data.access_token,
       name: response.data.user?.name || email.value,
       email: email.value,
       id: response.data.user?.id,
+      avatarUrl: response.data.user?.avatarUrl || null,
     }
+
+    console.log('User data before login:', userData)
 
     // Сохраняем данные пользователя
     authStore.login(userData)
+
+    console.log('After authStore.login - localStorage:', {
+      token: localStorage.getItem('token'),
+      username: localStorage.getItem('username'),
+      avatarUrl: localStorage.getItem('avatarUrl'),
+      userId: localStorage.getItem('userId'),
+    })
 
     // Перенаправляем пользователя на домашнюю страницу или личный кабинет
     router.push('/')

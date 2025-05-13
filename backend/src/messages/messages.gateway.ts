@@ -22,11 +22,11 @@ export class MessagesGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(MessagesGateway.name);
-  private userSocketMap = new Map<string, string>(); // userId -> socketId
+  public userSocketMap = new Map<string, string>(); // userId -> socketId
   private socketUserMap = new Map<string, string>(); // socketId -> userId
 
   @WebSocketServer()
-  server: Server;
+  public server: Server;
 
   constructor(
     private messagesService: MessagesService,
@@ -61,6 +61,9 @@ export class MessagesGateway
       this.userSocketMap.set(userId.toString(), client.id);
       this.socketUserMap.set(client.id, userId.toString());
 
+      // Set userId in socket data
+      client.data.userId = userId.toString();
+
       // Join a room with the user's ID
       client.join(`user_${userId}`);
 
@@ -77,6 +80,10 @@ export class MessagesGateway
         userId.toString(),
       );
       client.emit('unread_count', { unreadCount });
+
+      // Get and send initial chats
+      const chats = await this.messagesService.getChats(userId.toString());
+      client.emit('chats_updated', chats);
     } catch (error) {
       this.logger.error(`Error during connection: ${error.message}`);
       client.disconnect();
@@ -94,43 +101,70 @@ export class MessagesGateway
 
   @SubscribeMessage('send_message')
   async handleSendMessage(
-    @MessageBody() createMessageDto: CreateMessageDto,
     @ConnectedSocket() client: Socket,
+    @MessageBody() data: { content: string; receiverId: string },
   ) {
     try {
-      const userId = this.socketUserMap.get(client.id);
-      if (!userId) {
+      const currentUserId = this.socketUserMap.get(client.id);
+      if (!currentUserId) {
         client.emit('error', { message: 'Unauthorized' });
         return;
       }
 
-      // Get user from socket connection
-      const user = {
-        userId,
-        username: '', // This will be filled by the service
+      // Create message using the service
+      const message = await this.messagesService.create(
+        { userId: currentUserId },
+        { content: data.content, receiverId: data.receiverId },
+      );
+
+      // Format message for sending
+      const messageToSend = {
+        id: message.id,
+        content: message.content,
+        senderId: message.senderId,
+        receiverId: message.receiverId,
+        createdAt: message.createdAt,
+        sender: message.sender,
+        receiver: message.receiver,
+        isRead: message.isRead,
       };
 
-      // Create the message using the existing service
-      const message = await this.messagesService.create(user, createMessageDto);
+      // Send to sender's room
+      this.server
+        .to(`user_${currentUserId}`)
+        .emit('message_sent', messageToSend);
 
-      // Emit the message to the sender
-      client.emit('message_sent', message);
-
-      // Emit the message to the receiver if they are online
-      const receiverSocketId = this.userSocketMap.get(
-        createMessageDto.receiverId,
-      );
-      if (receiverSocketId) {
-        this.server.to(receiverSocketId).emit('new_message', message);
-
-        // Also update their unread count
-        const unreadCount = await this.messagesService.getUnreadCount(
-          createMessageDto.receiverId,
-        );
-        this.server.to(receiverSocketId).emit('unread_count', { unreadCount });
+      // Send to receiver's room if online
+      const receiverSocket = this.userSocketMap.get(data.receiverId);
+      if (receiverSocket) {
+        this.server
+          .to(`user_${data.receiverId}`)
+          .emit('new_message', messageToSend);
       }
 
-      return message;
+      // Update chats for both users
+      const chats = await this.messagesService.getChats(currentUserId);
+      this.server.to(`user_${currentUserId}`).emit('chats_updated', chats);
+
+      if (receiverSocket) {
+        const receiverChats = await this.messagesService.getChats(
+          data.receiverId,
+        );
+        this.server
+          .to(`user_${data.receiverId}`)
+          .emit('chats_updated', receiverChats);
+
+        // Get and send unread count for receiver
+        const unreadCount = await this.messagesService.getUnreadCount(
+          data.receiverId,
+          currentUserId
+        );
+        this.server
+          .to(`user_${data.receiverId}`)
+          .emit('unread_count_updated', { unreadCount });
+      }
+
+      return messageToSend;
     } catch (error) {
       this.logger.error(`Error sending message: ${error.message}`);
       client.emit('error', { message: error.message });

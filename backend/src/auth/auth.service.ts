@@ -57,6 +57,7 @@ export class AuthService {
       user: {
         id: user.id,
         username: user.username,
+        avatarUrl: user.avatarUrl || null,
       },
     };
   }
