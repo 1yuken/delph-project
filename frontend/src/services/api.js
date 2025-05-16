@@ -132,6 +132,16 @@ export const ordersApi = {
     }
   },
 
+  update: async (orderId, orderData) => {
+    try {
+      const response = await api.patch(`/orders/${orderId}`, orderData)
+      return response.data
+    } catch (error) {
+      console.error('Ошибка при обновлении заказа:', error)
+      throw error
+    }
+  },
+
   updateStatus: async (orderId, status) => {
     try {
       const response = await api.patch(`/orders/${orderId}/status`, { status })

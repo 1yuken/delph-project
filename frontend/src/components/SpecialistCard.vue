@@ -48,6 +48,14 @@ const truncateText = (text) => {
 const goToProfile = () => {
   router.push(`/profile/${props.specialist.id}`)
 }
+
+const goToChat = (event) => {
+  event.stopPropagation()
+  router.push({
+    path: '/messages',
+    query: { userId: props.specialist.id },
+  })
+}
 </script>
 
 <template>
@@ -74,7 +82,7 @@ const goToProfile = () => {
       <!-- Кнопки на мобильных устройствах -->
       <div class="flex md:hidden gap-2">
         <button
-          @click.stop
+          @click="goToChat"
           class="px-3 py-1.5 text-xs rounded-md font-medium bg-[#0A65CC] text-white transition-colors duration-200 hover:bg-[#085BBA] cursor-pointer"
         >
           Связаться
@@ -138,7 +146,7 @@ const goToProfile = () => {
     <!-- Кнопки на десктопе -->
     <div class="hidden md:flex self-start flex-col gap-2">
       <button
-        @click.stop
+        @click="goToChat"
         class="px-4 py-2 text-sm rounded-md font-medium bg-[#0A65CC] text-white transition-colors duration-200 hover:bg-[#085BBA] cursor-pointer"
       >
         Связаться

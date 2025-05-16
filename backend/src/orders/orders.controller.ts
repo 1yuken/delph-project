@@ -193,4 +193,19 @@ export class OrdersController {
     };
     return this.ordersService.findAll(queryDto);
   }
+
+  @Post(':id/payment')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Создать платеж для заказа' })
+  @ApiParam({ name: 'id', description: 'ID заказа' })
+  @ApiResponse({
+    status: 200,
+    description: 'Платеж успешно создан',
+    type: Order,
+  })
+  @ApiResponse({ status: 404, description: 'Заказ не найден' })
+  async createPayment(@Param('id') id: string, @Request() req) {
+    return this.ordersService.createPayment(+id, req.user.userId);
+  }
 }

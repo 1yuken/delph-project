@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ordersApi } from '@/services/api'
+import { useAuthStore } from '@/stores/authStore'
 import {
   ChevronLeft,
   Calendar,
@@ -18,15 +19,23 @@ import {
   Briefcase,
   Award,
   Shield,
+  Edit,
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const order = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 const similarOrders = ref([])
 const isBookmarked = ref(false)
+
+// Проверяем, является ли текущий пользователь владельцем заказа
+const isOrderOwner = computed(() => {
+  console.log('order client id:', order.value?.client?.id, 'user id:', authStore.userId.value)
+  return String(order.value?.client?.id) === String(authStore.userId.value)
+})
 
 // Статусы заказов и их цвета
 const orderStatuses = {
@@ -145,10 +154,28 @@ const goBack = () => {
   router.go(-1)
 }
 
+// Переход на страницу редактирования заказа
+const editOrder = () => {
+  if (order.value?.id) {
+    router.push(`/order/${order.value.id}/edit`)
+  }
+}
+
 // Отклик на заказ
 const respondToOrder = () => {
-  // Здесь будет логика отклика на заказ
-  alert('Функция отклика на заказ будет реализована в будущем')
+  if (!order.value?.client?.id) return
+
+  // Формируем сообщение с информацией о заказе
+  const orderInfo = `Заказ: ${order.value.title}\nБюджет: ${order.value.price}\nСрок: ${formatDate(order.value.deadline)}`
+
+  // Переходим в чат с заказчиком
+  router.push({
+    path: '/messages',
+    query: {
+      userId: order.value.client.id,
+      initialMessage: orderInfo,
+    },
+  })
 }
 
 // Поделиться заказом
@@ -342,9 +369,18 @@ onMounted(fetchOrder)
 
         <!-- Правая колонка (информация о заказчике и действия) -->
         <div class="w-full lg:w-1/3 space-y-6">
-          <!-- Кнопка отклика -->
+          <!-- Кнопка отклика или редактирования -->
           <div class="bg-white rounded-lg shadow-sm border border-[#E5E9F2] overflow-hidden p-6">
             <button
+              v-if="isOrderOwner"
+              @click="editOrder"
+              class="w-full py-3 bg-[#0A65CC] text-white rounded-lg font-medium hover:bg-[#085BBA] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Edit class="w-5 h-5" />
+              <span>Редактировать заказ</span>
+            </button>
+            <button
+              v-else
               @click="respondToOrder"
               class="w-full py-3 bg-[#0A65CC] text-white rounded-lg font-medium hover:bg-[#085BBA] transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
@@ -422,11 +458,6 @@ onMounted(fetchOrder)
                   class="w-full py-2.5 bg-white cursor-pointer border border-[#0A65CC] text-[#0A65CC] rounded-lg font-medium hover:bg-[#F0F7FF] transition-colors"
                 >
                   Посмотреть профиль
-                </button>
-                <button
-                  class="w-full py-2.5 bg-white cursor-pointer border border-[#E5E9F2] text-[#656565] rounded-lg font-medium hover:border-[#0A65CC] hover:text-[#0A65CC] transition-colors"
-                >
-                  Написать сообщение
                 </button>
               </div>
             </div>

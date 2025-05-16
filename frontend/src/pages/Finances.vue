@@ -28,7 +28,7 @@ const operations = ref([
     amount: 22.0,
     currency: '₽',
     details: 'Подробная информация о заказе XZU21Y3SR...',
-    type: 'order'
+    type: 'order',
   },
   {
     id: 2,
@@ -39,7 +39,7 @@ const operations = ref([
     amount: 57.92,
     currency: '₽',
     details: 'Подробнее о пополнении #B799WUJ...',
-    type: 'deposit'
+    type: 'deposit',
   },
   {
     id: 3,
@@ -50,7 +50,7 @@ const operations = ref([
     amount: -15.0,
     currency: '₽',
     details: 'Подробнее о заказе XT3LMVU...',
-    type: 'order'
+    type: 'order',
   },
   {
     id: 4,
@@ -61,8 +61,8 @@ const operations = ref([
     amount: -150.0,
     currency: '₽',
     details: 'Вывод средств на карту **** 4589',
-    type: 'withdrawal'
-  }
+    type: 'withdrawal',
+  },
 ])
 
 // Имитация загрузки данных
@@ -103,9 +103,9 @@ const filteredOperations = computed(() => {
   // Поиск по описанию
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter(op => 
-      op.description.toLowerCase().includes(query) || 
-      op.details.toLowerCase().includes(query)
+    result = result.filter(
+      (op) =>
+        op.description.toLowerCase().includes(query) || op.details.toLowerCase().includes(query),
     )
   }
 
@@ -115,10 +115,10 @@ const filteredOperations = computed(() => {
 // Сортировка операций
 const sortedOperations = computed(() => {
   const operations = [...filteredOperations.value]
-  
+
   return operations.sort((a, b) => {
     let comparison = 0
-    
+
     if (sortBy.value === 'date') {
       comparison = new Date(a.date) - new Date(b.date)
     } else if (sortBy.value === 'amount') {
@@ -128,7 +128,7 @@ const sortedOperations = computed(() => {
     } else if (sortBy.value === 'description') {
       comparison = a.description.localeCompare(b.description)
     }
-    
+
     return sortDirection.value === 'asc' ? comparison : -comparison
   })
 })
@@ -148,7 +148,7 @@ function formatRelativeDate(dateString) {
   const now = new Date()
   const diffTime = Math.abs(now - date)
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
+
   let relativeTime = ''
   if (diffDays < 30) {
     relativeTime = `(${diffDays} дн. назад)`
@@ -159,7 +159,7 @@ function formatRelativeDate(dateString) {
     const years = Math.floor(diffDays / 365)
     relativeTime = `(${years} г. назад)`
   }
-  
+
   return `${date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}, ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} ${relativeTime}`
 }
 
@@ -169,29 +169,31 @@ const formattedFinances = computed(() => formatAmount(countFinances.value))
 // Статистика по операциям
 const financialStats = computed(() => {
   const income = operations.value
-    .filter(op => op.amount > 0)
+    .filter((op) => op.amount > 0)
     .reduce((sum, op) => sum + op.amount, 0)
-    
+
   const expenses = operations.value
-    .filter(op => op.amount < 0)
+    .filter((op) => op.amount < 0)
     .reduce((sum, op) => sum + op.amount, 0)
-    
-  const lastMonthOperations = operations.value.filter(op => {
+
+  const lastMonthOperations = operations.value.filter((op) => {
     const opDate = new Date(op.date)
     const oneMonthAgo = new Date()
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
     return opDate >= oneMonthAgo
   })
-  
+
   const lastMonthIncome = lastMonthOperations
-    .filter(op => op.amount > 0)
+    .filter((op) => op.amount > 0)
     .reduce((sum, op) => sum + op.amount, 0)
-    
+
   return {
     totalIncome: income,
     totalExpenses: Math.abs(expenses),
     lastMonthIncome,
-    completedOrders: operations.value.filter(op => op.type === 'order' && op.status === 'Завершено').length
+    completedOrders: operations.value.filter(
+      (op) => op.type === 'order' && op.status === 'Завершено',
+    ).length,
   }
 })
 
@@ -210,16 +212,11 @@ function exportOperations() {
   const headers = ['Дата', 'Описание', 'Статус', 'Сумма']
   const csvContent = [
     headers.join(','),
-    ...sortedOperations.value.map(op => 
-      [
-        op.formattedDate,
-        `"${op.description}"`,
-        op.status,
-        op.amount
-      ].join(',')
-    )
+    ...sortedOperations.value.map((op) =>
+      [op.formattedDate, `"${op.description}"`, op.status, op.amount].join(','),
+    ),
   ].join('\n')
-  
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -258,14 +255,14 @@ function exportOperations() {
           </button>
         </div>
       </div>
-      
+
       <!-- Финансовая сводка -->
       <FinancialSummary :stats="financialStats" :formatAmount="formatAmount" />
-      
+
       <div class="flex flex-wrap justify-between items-center gap-4 my-6">
         <div class="flex items-center gap-3 flex-wrap">
           <OperationsFilter v-model="selectedFilter" />
-          
+
           <div class="relative">
             <input
               v-model="searchQuery"
@@ -273,7 +270,9 @@ function exportOperations() {
               placeholder="Поиск по операциям"
               class="pl-9 pr-4 py-2 border border-[#E5E9F2] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC] w-64 max-sm:w-full"
             />
-            <SearchIcon2 class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]" />
+            <SearchIcon2
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]"
+            />
           </div>
         </div>
       </div>
@@ -289,14 +288,30 @@ function exportOperations() {
       </div>
 
       <!-- Если операций нет, отображаем сообщение -->
-      <div v-else-if="sortedOperations.length === 0" class="text-center py-10 bg-[#F9F9F9] rounded-lg border border-[#E5E9F2]">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 text-[#656565]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      <div
+        v-else-if="sortedOperations.length === 0"
+        class="text-center py-10 bg-[#F9F9F9] rounded-lg border border-[#E5E9F2]"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-12 w-12 mx-auto mb-3 text-[#656565]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+          />
         </svg>
         <p class="text-[#656565] mb-2">У вас пока нет операций</p>
-        <p class="text-sm text-[#656565]">Попробуйте изменить параметры фильтрации или выполнить операцию</p>
+        <p class="text-sm text-[#656565]">
+          Попробуйте изменить параметры фильтрации или выполнить операцию
+        </p>
       </div>
-      
+
       <!-- Иначе, отображаем таблицу операций -->
       <OperationsTable
         v-else

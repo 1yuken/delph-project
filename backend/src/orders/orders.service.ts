@@ -399,4 +399,27 @@ export class OrdersService {
 
     return this.ordersRepository.save(order);
   }
+
+  async createPayment(
+    id: number,
+    userId: string,
+  ): Promise<{ paymentUrl: string }> {
+    const order = await this.findOne(id);
+
+    // Проверяем права доступа: только клиент может оплатить заказ
+    if (order.clientId !== userId) {
+      throw new ForbiddenException('У вас нет прав для оплаты этого заказа');
+    }
+
+    // Проверяем, что заказ находится в статусе "открыт"
+    if (order.status !== OrderStatus.OPEN) {
+      throw new BadRequestException('Можно оплатить только открытый заказ');
+    }
+
+    // Здесь должна быть интеграция с платежной системой
+    // Для примера просто возвращаем URL для оплаты
+    return {
+      paymentUrl: `/payment/${order.id}?amount=${order.budget}`,
+    };
+  }
 }

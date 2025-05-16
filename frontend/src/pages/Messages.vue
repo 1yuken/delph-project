@@ -213,15 +213,19 @@ async function enrichChatsWithUserInfo() {
 // Добавляем функцию для загрузки чатов
 async function fetchChats() {
   try {
+    const token = localStorage.getItem('token')
+    console.log('Fetching chats with token:', token ? 'exists' : 'missing')
+
     const response = await axios.get('http://localhost:3000/messages/chats', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${token}`,
       },
     })
+    console.log('Chats response:', response.data)
     chats.value = response.data || []
     await enrichChatsWithUserInfo()
   } catch (error) {
-    console.error('Error fetching chats:', error)
+    console.error('Error fetching chats:', error.response?.data || error.message)
     chats.value = []
   }
 }
@@ -229,13 +233,17 @@ async function fetchChats() {
 // Инициализация сокета
 const initializeSocket = () => {
   try {
-    if (!localStorage.getItem('token')) {
-      console.error('No token found')
+    const token = localStorage.getItem('token')
+    console.log('Token from localStorage:', token ? 'exists' : 'missing')
+
+    if (!token) {
+      console.error('No token found in localStorage')
       return
     }
 
+    console.log('Initializing socket connection...')
     socket.value = io('http://localhost:3000', {
-      auth: { token: localStorage.getItem('token') },
+      auth: { token },
       transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: 5,
@@ -243,15 +251,15 @@ const initializeSocket = () => {
     })
 
     socket.value.on('connect', () => {
-      console.log('Socket connected')
+      console.log('Socket connected successfully')
     })
 
-    socket.value.on('disconnect', () => {
-      console.log('Socket disconnected')
+    socket.value.on('connect_error', (error) => {
+      console.error('Socket connection error:', error.message)
     })
 
-    socket.value.on('error', (error) => {
-      console.error('Socket error:', error)
+    socket.value.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason)
     })
 
     // Обработка отправленного сообщения
@@ -413,9 +421,15 @@ async function selectOrStartChat(userId) {
 // Следим за изменениями query параметров
 watch(
   () => route.query.userId,
-  (newUserId) => {
+  async (newUserId) => {
     if (newUserId) {
-      selectOrStartChat(Number(newUserId))
+      await selectOrStartChat(Number(newUserId))
+
+      // Если есть начальное сообщение, отправляем его
+      if (route.query.initialMessage) {
+        newMessage.value = route.query.initialMessage
+        await sendMessage()
+      }
     }
   },
   { immediate: true },

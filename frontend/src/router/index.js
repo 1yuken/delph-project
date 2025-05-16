@@ -14,6 +14,10 @@ import Specialists from '@/pages/Specialists.vue'
 import Order from '@/pages/Order.vue'
 import OrderDetail from '@/components/OrderDetail.vue'
 import CreateOrder from '@/pages/CreateOrder.vue'
+import MyOrders from '@/pages/MyOrders.vue'
+import OrderEdit from '@/pages/OrderEdit.vue'
+import Payment from '@/pages/Payment.vue'
+import PaymentSuccess from '@/pages/PaymentSuccess.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -31,7 +35,11 @@ const routes = [
   { path: '/item/:id', component: ItemDetail, props: true },
   { path: '/', component: Order },
   { path: '/order/:id', component: OrderDetail, props: true },
+  { path: '/order/:id/edit', component: OrderEdit, props: true },
   { path: '/create-order/:id', component: CreateOrder },
+  { path: '/my-orders', component: MyOrders },
+  { path: '/payment/:id', component: Payment, props: true },
+  { path: '/payment/success/:id', component: PaymentSuccess, props: true },
 ]
 
 const router = createRouter({

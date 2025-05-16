@@ -124,7 +124,7 @@ const submitOrder = async () => {
       title: orderForm.value.title,
       description: orderForm.value.description,
       price: orderForm.value.price + ' ₽',
-      categories: item.value.categories || '',
+      categories: orderForm.value.category,
       itemId: itemId,
       status: 'open',
       clientId: localStorage.getItem('userId') || null,

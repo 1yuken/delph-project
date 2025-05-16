@@ -16,6 +16,7 @@ import {
   Users,
   Shield,
   BookOpen,
+  Briefcase,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
@@ -421,6 +422,20 @@ const isActiveRoute = (route) => {
 
           <RouterLink
             @click="toggleMobileMenu"
+            to="/my-orders"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+            :class="
+              isActiveRoute('/my-orders')
+                ? 'bg-[#F0F7FF] text-[#0A65CC]'
+                : 'text-[#656565] hover:bg-[#F9F9F9]'
+            "
+          >
+            <Briefcase class="w-5 h-5" />
+            <span class="font-medium">Мои заказы</span>
+          </RouterLink>
+
+          <RouterLink
+            @click="toggleMobileMenu"
             to="/settings"
             class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
             :class="
@@ -435,7 +450,7 @@ const isActiveRoute = (route) => {
 
           <button
             @click="logout"
-            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#656565] hover:bg-[#F9F9F9] transition-colors text-left"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer text-[#656565] hover:bg-[#F9F9F9] transition-colors text-left"
           >
             <LogOut class="w-5 h-5" />
             <span class="font-medium">Выйти</span>
@@ -651,6 +666,14 @@ const isActiveRoute = (route) => {
                   >
                     <User class="w-4 h-4" />
                     <span>Профиль</span>
+                  </RouterLink>
+
+                  <RouterLink
+                    to="/my-orders"
+                    class="flex items-center gap-2 w-full text-sm px-4 py-3 text-[#656565] hover:bg-[#F0F7FF] transition-colors"
+                  >
+                    <Briefcase class="w-4 h-4" />
+                    <span>Мои заказы</span>
                   </RouterLink>
 
                   <RouterLink
