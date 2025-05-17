@@ -6,14 +6,16 @@ import {
   Paperclip,
   Send,
   MoreVertical,
-  Image,
-  File,
   Smile,
   ChevronLeft,
   Check,
   CheckCheck,
   Filter,
   Bell,
+  X,
+  MessageCircle,
+  Phone,
+  Mic
 } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
@@ -452,7 +454,7 @@ const orderedMessages = computed(() => {
 <template>
   <div class="bg-[#F9F9F9] py-6 px-4 min-h-screen">
     <div
-      class="max-w-6xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-[#E5E9F2]"
+      class="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden border border-[#E5E9F2]"
     >
       <div class="flex h-[calc(100vh-120px)] min-h-[500px]">
         <!-- Список чатов (скрывается на мобильных при просмотре чата) -->
@@ -461,22 +463,27 @@ const orderedMessages = computed(() => {
           class="w-full md:w-1/3 lg:w-1/4 border-r border-[#E5E9F2] flex flex-col"
         >
           <!-- Заголовок и поиск -->
-          <div class="p-4 border-b border-[#E5E9F2]">
+          <div class="p-5 border-b border-[#E5E9F2] bg-white">
             <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-2">
-                <h1 class="text-xl font-bold text-[#222222]">Сообщения</h1>
-                <span
-                  v-if="totalUnread > 0"
-                  class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-[#0A65CC] rounded-full"
-                >
-                  {{ totalUnread }}
-                </span>
+              <div class="flex items-center gap-3">
+                <div class="bg-[#F0F7FF] p-2 rounded-lg">
+                  <MessageCircle class="w-5 h-5 text-[#0A65CC]" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <h1 class="text-xl font-bold text-[#222222]">Сообщения</h1>
+                  <span
+                    v-if="totalUnread > 0"
+                    class="inline-flex items-center justify-center min-w-[22px] h-6 px-1.5 text-xs font-medium text-white bg-[#0A65CC] rounded-full shadow-sm"
+                  >
+                    {{ totalUnread }}
+                  </span>
+                </div>
               </div>
               <div class="flex items-center gap-2">
-                <button class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors">
+                <button class="p-2 rounded-lg hover:bg-[#F0F7FF] transition-colors cursor-pointer">
                   <Filter class="w-5 h-5 text-[#656565]" />
                 </button>
-                <button class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors">
+                <button class="p-2 rounded-lg hover:bg-[#F0F7FF] transition-colors cursor-pointer">
                   <Bell class="w-5 h-5 text-[#656565]" />
                 </button>
               </div>
@@ -486,25 +493,36 @@ const orderedMessages = computed(() => {
                 v-model="searchQuery"
                 type="text"
                 placeholder="Поиск сообщений"
-                class="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E9F2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC]"
+                class="w-full pl-10 pr-4 py-2.5 text-sm border border-[#E5E9F2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A65CC]/20 focus:border-[#0A65CC] transition-all"
               />
               <Search
                 class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565]"
               />
+              <button 
+                v-if="searchQuery" 
+                @click="searchQuery = ''" 
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#656565] hover:text-[#222222] cursor-pointer"
+              >
+                <X class="w-4 h-4" />
+              </button>
             </div>
           </div>
 
           <!-- Список чатов -->
           <div class="flex-1 overflow-y-auto">
-            <div v-if="filteredChats.length === 0" class="p-4 text-center text-[#656565]">
-              Чаты не найдены
+            <div v-if="filteredChats.length === 0" class="p-8 text-center">
+              <div class="bg-[#F0F7FF] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search class="w-8 h-8 text-[#0A65CC]" />
+              </div>
+              <p class="text-[#222222] font-medium mb-1">Чаты не найдены</p>
+              <p class="text-sm text-[#656565]">Попробуйте изменить запрос</p>
             </div>
             <div
               v-for="chat in filteredChats"
               :key="getCompanionId(chat)"
               @click="selectChat(getCompanionId(chat))"
-              class="p-3 border-b border-[#E5E9F2] cursor-pointer transition-colors hover:bg-[#F9F9F9]"
-              :class="{ 'bg-[#F0F7FF]': selectedUserId == getCompanionId(chat) }"
+              class="p-4 border-b border-[#E5E9F2] cursor-pointer transition-all hover:bg-[#F0F7FF]/50"
+              :class="{ 'bg-[#F0F7FF] border-l-4 border-l-[#0A65CC]': selectedUserId == getCompanionId(chat) }"
             >
               <div class="flex items-center gap-3">
                 <!-- Аватар с индикатором онлайн -->
@@ -512,7 +530,8 @@ const orderedMessages = computed(() => {
                   <img
                     :src="chat.avatar || 'https://via.placeholder.com/48?text=?'"
                     :alt="chat.name || 'Пользователь'"
-                    class="w-12 h-12 rounded-full object-cover border border-[#E5E9F2]"
+                    class="w-12 h-12 rounded-full object-cover border border-[#E5E9F2] transition-all"
+                    :class="{ 'ring-2 ring-[#0A65CC] ring-offset-2': selectedUserId == getCompanionId(chat) }"
                     onerror="this.src='https://via.placeholder.com/48?text=?'"
                   />
                   <div
@@ -527,16 +546,23 @@ const orderedMessages = computed(() => {
                     <h3 class="font-medium text-[#222222] truncate">
                       {{ chat.name || 'Пользователь' }}
                     </h3>
-                    <span class="text-xs text-[#656565] whitespace-nowrap ml-2">{{
+                    <span class="text-xs text-[#656565] whitespace-nowrap ml-2 bg-[#F9F9F9] px-1.5 py-0.5 rounded">{{
                       chat.time
                     }}</span>
                   </div>
                   <div class="flex justify-between items-center mt-1">
-                    <p v-if="chat.isTyping" class="text-sm text-[#0A65CC] italic">печатает...</p>
+                    <p v-if="chat.isTyping" class="text-sm text-[#0A65CC] italic flex items-center gap-1">
+                      <span class="flex gap-0.5">
+                        <span class="w-1.5 h-1.5 bg-[#0A65CC] rounded-full animate-typing" style="animation-delay: 0s"></span>
+                        <span class="w-1.5 h-1.5 bg-[#0A65CC] rounded-full animate-typing" style="animation-delay: 0.2s"></span>
+                        <span class="w-1.5 h-1.5 bg-[#0A65CC] rounded-full animate-typing" style="animation-delay: 0.4s"></span>
+                      </span>
+                      печатает...
+                    </p>
                     <p v-else class="text-sm text-[#656565] truncate">{{ chat.lastMessage }}</p>
                     <span
                       v-if="chat.unread > 0"
-                      class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-[#0A65CC] rounded-full ml-2"
+                      class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-[#0A65CC] rounded-full shadow-sm ml-2"
                     >
                       {{ chat.unread }}
                     </span>
@@ -550,13 +576,13 @@ const orderedMessages = computed(() => {
         <!-- Область чата -->
         <div v-if="selectedUserId" class="w-full md:w-2/3 lg:w-3/4 flex flex-col">
           <!-- Заголовок чата -->
-          <div class="p-4 border-b border-[#E5E9F2] flex items-center justify-between">
+          <div class="p-4 border-b border-[#E5E9F2] bg-white flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
               <!-- Кнопка возврата на мобильных -->
               <button
                 v-if="isMobileView"
                 @click="backToList"
-                class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors"
+                class="p-2 rounded-lg hover:bg-[#F0F7FF] transition-colors cursor-pointer"
               >
                 <ChevronLeft class="w-5 h-5 text-[#656565]" />
               </button>
@@ -567,19 +593,22 @@ const orderedMessages = computed(() => {
                   <img
                     :src="userPlaceholder.avatar"
                     :alt="userPlaceholder.name"
-                    class="w-10 h-10 rounded-full object-cover border border-[#E5E9F2]"
+                    class="w-12 h-12 rounded-full object-cover border border-[#E5E9F2]"
                     onerror="this.src='https://via.placeholder.com/40?text=?'"
                   />
                   <div
                     v-if="userPlaceholder.online"
-                    class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"
+                    class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"
                   ></div>
                 </div>
                 <div>
                   <h3 class="font-medium text-[#222222]">
                     {{ userPlaceholder.name }}
                   </h3>
-                  <p v-if="userPlaceholder.online" class="text-xs text-green-500">Онлайн</p>
+                  <p v-if="userPlaceholder.online" class="text-xs text-green-500 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                    Онлайн
+                  </p>
                   <p v-else class="text-xs text-[#656565]">Был(а) недавно</p>
                 </div>
               </div>
@@ -587,108 +616,109 @@ const orderedMessages = computed(() => {
 
             <!-- Действия с чатом -->
             <div class="flex items-center gap-2">
-              <button class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors">
+              <button class="p-2 rounded-lg hover:bg-[#F0F7FF] transition-colors cursor-pointer">
+                <Phone class="w-5 h-5 text-[#656565]" />
+              </button>
+              <button class="p-2 rounded-lg hover:bg-[#F0F7FF] transition-colors cursor-pointer">
                 <MoreVertical class="w-5 h-5 text-[#656565]" />
               </button>
             </div>
           </div>
 
           <!-- История сообщений -->
-          <div class="flex-1 p-4 overflow-y-auto bg-[#F9F9F9]" ref="messagesContainer">
-            <div v-for="message in orderedMessages" :key="message.id" class="mb-4">
-              <!-- Входящее сообщение -->
-              <div v-if="!isMyMessage(message)" class="flex items-start gap-2 max-w-[80%]">
+          <div class="flex-1 p-5 overflow-y-auto bg-gradient-to-b from-[#F9F9F9] to-[#F0F7FF]/30" ref="messagesContainer">
+            <div class="max-w-3xl mx-auto">
+              <div class="text-center mb-6">
+                <div class="inline-block bg-white px-3 py-1 rounded-full text-xs text-[#656565] shadow-sm">
+                  Сегодня
+                </div>
+              </div>
+              
+              <div v-for="message in orderedMessages" :key="message.id" class="mb-4">
+                <!-- Входящее сообщение -->
+                <div v-if="!isMyMessage(message)" class="flex items-start gap-2 max-w-[80%]">
+                  <img
+                    :src="
+                      chats.find((c) => c.userId === message.senderId)?.avatar ||
+                      userPlaceholder.avatar
+                    "
+                    :alt="
+                      chats.find((c) => c.userId === message.senderId)?.name || userPlaceholder.name
+                    "
+                    class="w-8 h-8 rounded-full object-cover mt-1"
+                    onerror="this.src='https://via.placeholder.com/32?text=?'"
+                  />
+                  <div>
+                    <div
+                      class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm border border-[#E5E9F2]"
+                    >
+                      <p class="text-[#222222]">{{ message.content }}</p>
+                    </div>
+                    <div class="flex items-center mt-1 ml-1">
+                      <span class="text-xs text-[#656565]">{{ message.time }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Исходящее сообщение -->
+                <div v-else class="flex items-start gap-2 max-w-[80%] ml-auto flex-row-reverse">
+                  <div>
+                    <div class="bg-[#0A65CC] p-3 rounded-2xl rounded-tr-none shadow-sm">
+                      <p class="text-white">{{ message.content }}</p>
+                    </div>
+                    <div class="flex items-center justify-end gap-1 mt-1 mr-1">
+                      <span class="text-xs text-[#656565]">{{ message.time }}</span>
+                      <!-- Статус сообщения -->
+                      <Check v-if="message.status === 'sent'" class="w-3 h-3 text-[#656565]" />
+                      <CheckCheck
+                        v-else-if="message.status === 'delivered'"
+                        class="w-3 h-3 text-[#656565]"
+                      />
+                      <CheckCheck
+                        v-else-if="message.status === 'read'"
+                        class="w-3 h-3 text-[#0A65CC]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Индикатор печати -->
+              <div
+                v-if="chats.find((c) => c.userId === selectedUserId)?.isTyping"
+                class="flex items-start gap-2 max-w-[80%] mb-4"
+              >
                 <img
-                  :src="
-                    chats.find((c) => c.userId === message.senderId)?.avatar ||
-                    userPlaceholder.avatar
-                  "
-                  :alt="
-                    chats.find((c) => c.userId === message.senderId)?.name || userPlaceholder.name
-                  "
+                  :src="chats.find((c) => c.userId === selectedUserId)?.avatar"
+                  :alt="chats.find((c) => c.userId === selectedUserId)?.name"
                   class="w-8 h-8 rounded-full object-cover mt-1"
                   onerror="this.src='https://via.placeholder.com/32?text=?'"
                 />
-                <div>
-                  <div
-                    class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm border border-[#E5E9F2]"
-                  >
-                    <p class="text-[#222222]">{{ message.content }}</p>
+                <div
+                  class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm border border-[#E5E9F2] min-w-[60px]"
+                >
+                  <div class="flex gap-1.5">
+                    <div class="w-2 h-2 bg-[#0A65CC] rounded-full animate-typing"></div>
+                    <div
+                      class="w-2 h-2 bg-[#0A65CC] rounded-full animate-typing"
+                      style="animation-delay: 0.2s"
+                    ></div>
+                    <div
+                      class="w-2 h-2 bg-[#0A65CC] rounded-full animate-typing"
+                      style="animation-delay: 0.4s"
+                    ></div>
                   </div>
-                  <div class="flex items-center mt-1 ml-1">
-                    <span class="text-xs text-[#656565]">{{ message.time }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Исходящее сообщение -->
-              <div v-else class="flex items-start gap-2 max-w-[80%] ml-auto flex-row-reverse">
-                <div>
-                  <div class="bg-[#F0F7FF] p-3 rounded-lg rounded-tr-none shadow-sm">
-                    <p class="text-[#222222]">{{ message.content }}</p>
-                  </div>
-                  <div class="flex items-center justify-end gap-1 mt-1 mr-1">
-                    <span class="text-xs text-[#656565]">{{ message.time }}</span>
-                    <!-- Статус сообщения -->
-                    <Check v-if="message.status === 'sent'" class="w-3 h-3 text-[#656565]" />
-                    <CheckCheck
-                      v-else-if="message.status === 'delivered'"
-                      class="w-3 h-3 text-[#656565]"
-                    />
-                    <CheckCheck
-                      v-else-if="message.status === 'read'"
-                      class="w-3 h-3 text-[#0A65CC]"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Индикатор печати -->
-            <div
-              v-if="chats.find((c) => c.userId === selectedUserId)?.isTyping"
-              class="flex items-start gap-2 max-w-[80%] mb-4"
-            >
-              <img
-                :src="chats.find((c) => c.userId === selectedUserId)?.avatar"
-                :alt="chats.find((c) => c.userId === selectedUserId)?.name"
-                class="w-8 h-8 rounded-full object-cover mt-1"
-                onerror="this.src='https://via.placeholder.com/32?text=?'"
-              />
-              <div
-                class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm border border-[#E5E9F2] min-w-[60px]"
-              >
-                <div class="flex gap-1">
-                  <div class="w-2 h-2 bg-[#656565] rounded-full animate-bounce"></div>
-                  <div
-                    class="w-2 h-2 bg-[#656565] rounded-full animate-bounce"
-                    style="animation-delay: 0.2s"
-                  ></div>
-                  <div
-                    class="w-2 h-2 bg-[#656565] rounded-full animate-bounce"
-                    style="animation-delay: 0.4s"
-                  ></div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Поле ввода сообщения -->
-          <div class="p-3 border-t border-[#E5E9F2] bg-white">
-            <div class="flex items-center gap-2">
-              <div class="flex items-center gap-1">
-                <button class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors">
+          <div class="p-4 border-t border-[#E5E9F2] bg-white shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="flex items-center">
+                <button class="p-2 rounded-lg hover:bg-[#F0F7FF] transition-colors cursor-pointer">
                   <Paperclip class="w-5 h-5 text-[#656565]" />
-                </button>
-                <button
-                  class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors hidden sm:block"
-                >
-                  <Image class="w-5 h-5 text-[#656565]" />
-                </button>
-                <button
-                  class="p-2 rounded-full hover:bg-[#F0F7FF] transition-colors hidden sm:block"
-                >
-                  <File class="w-5 h-5 text-[#656565]" />
                 </button>
               </div>
 
@@ -697,23 +727,41 @@ const orderedMessages = computed(() => {
                   v-model="newMessage"
                   type="text"
                   placeholder="Введите сообщение..."
-                  class="w-full px-4 py-2 text-sm border border-[#E5E9F2] rounded-full focus:outline-none focus:ring-1 focus:ring-[#0A65CC] focus:border-[#0A65CC]"
+                  class="w-full px-4 py-3 text-sm border border-[#E5E9F2] rounded-full focus:outline-none focus:ring-2 focus:ring-[#0A65CC]/20 focus:border-[#0A65CC] bg-[#F9F9F9]"
                   @keyup.enter="sendMessage"
                 />
-                <button
-                  class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-[#F0F7FF] transition-colors"
-                >
-                  <Smile class="w-5 h-5 text-[#656565]" />
-                </button>
+                <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                  <button
+                    class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors cursor-pointer"
+                  >
+                    <Smile class="w-5 h-5 text-[#656565]" />
+                  </button>
+                  <button
+                    class="p-1.5 rounded-full hover:bg-[#F0F7FF] transition-colors cursor-pointer"
+                  >
+                    <Mic class="w-5 h-5 text-[#656565]" />
+                  </button>
+                </div>
               </div>
 
               <button
                 @click="sendMessage"
-                class="p-2 rounded-full bg-[#0A65CC] hover:bg-[#085BBA] transition-colors"
+                class="p-3 rounded-full bg-[#0A65CC] hover:bg-[#085BBA] transition-colors cursor-pointer shadow-sm hover:shadow"
               >
                 <Send class="w-5 h-5 text-white" />
               </button>
             </div>
+          </div>
+        </div>
+        
+        <!-- Пустое состояние чата -->
+        <div v-if="!selectedUserId && !isMobileView" class="w-full md:w-2/3 lg:w-3/4 flex flex-col items-center justify-center bg-gradient-to-b from-[#F9F9F9] to-[#F0F7FF]/30">
+          <div class="text-center max-w-md p-6">
+            <div class="bg-[#F0F7FF] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <MessageCircle class="w-10 h-10 text-[#0A65CC]" />
+            </div>
+            <h2 class="text-2xl font-bold text-[#222222] mb-2">Выберите чат</h2>
+            <p class="text-[#656565]">Выберите чат из списка слева для начала общения</p>
           </div>
         </div>
       </div>
@@ -740,17 +788,18 @@ const orderedMessages = computed(() => {
   background: #a1a1a1;
 }
 
-@keyframes bounce {
-  0%,
-  100% {
+@keyframes typing {
+  0%, 100% {
     transform: translateY(0);
+    opacity: 0.5;
   }
   50% {
     transform: translateY(-4px);
+    opacity: 1;
   }
 }
 
-.animate-bounce {
-  animation: bounce 1s infinite;
+.animate-typing {
+  animation: typing 1.2s infinite;
 }
 </style>

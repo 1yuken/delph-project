@@ -100,12 +100,12 @@ function getYearWord(years) {
       <img
         :src="avatarSrc"
         :alt="fullName"
-        class="rounded-full block w-[170px] h-[170px] object-cover border-2 border-[#E5E9F2]"
+        class="rounded-full block w-[170px] h-[170px] object-cover border-2 border-[#E5E9F2] shadow-sm"
         @error="$event.target.src = '/avatar-default.jpg'"
       />
       <div
         v-if="isOnline"
-        class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 border-2 border-white bg-[#4CAF50]"
+        class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 border-2 border-white bg-[#4CAF50] shadow-sm"
       ></div>
     </div>
 
@@ -129,3 +129,27 @@ function getYearWord(years) {
     </div>
   </div>
 </template>
+
+<style scoped>
+img {
+  transition: transform 0.2s ease-in-out;
+}
+
+img:hover {
+  transform: scale(1.02);
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+</style>

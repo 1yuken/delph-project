@@ -232,93 +232,131 @@ const handleSendMessage = () => {
 </script>
 
 <template>
-  <div class="relative flex flex-col w-3/5 mx-auto py-6 max-xl:w-4/5 max-lg:w-full max-lg:px-6">
-    <!-- Профиль пользователя -->
-    <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 mb-6 shadow-sm">
-      <div class="flex gap-8 max-lg:flex-col">
-        <ProfileAvatar
-          v-if="!isLoading"
-          :fullName="fullName"
-          :username="username"
-          :isOnline="isOnline"
-          :lastActive="lastActive"
-          :avatarUrl="avatarUrl"
-          :registrationDate="registrationDate"
-        />
-        <div v-else class="animate-pulse">
-          <div class="w-[170px] h-[170px] rounded-full bg-gray-200"></div>
-          <div class="mt-4 h-6 w-32 bg-gray-200 rounded"></div>
-          <div class="mt-2 h-4 w-24 bg-gray-200 rounded"></div>
-        </div>
-
-        <div class="flex-1">
-          <ProfileInfo
-            :description="description"
-            :isEditable="isOwnProfile"
-            @update:description="description = $event"
+  <div class="bg-[#F9F9F9] py-6 px-4">
+    <div class="max-w-6xl mx-auto">
+      <!-- Профиль пользователя -->
+      <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 mb-6 shadow-sm">
+        <div class="flex gap-8 max-lg:flex-col">
+          <ProfileAvatar
+            v-if="!isLoading"
+            :fullName="fullName"
+            :username="username"
+            :isOnline="isOnline"
+            :lastActive="lastActive"
+            :avatarUrl="avatarUrl"
+            :registrationDate="registrationDate"
           />
-        </div>
+          <div v-else class="animate-pulse">
+            <div class="w-[170px] h-[170px] rounded-full bg-gray-200"></div>
+            <div class="mt-4 h-6 w-32 bg-gray-200 rounded"></div>
+            <div class="mt-2 h-4 w-24 bg-gray-200 rounded"></div>
+          </div>
 
-        <div class="min-w-[200px]">
-          <button
-            v-if="!isOwnProfile"
-            @click="handleSendMessage"
-            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm rounded-md font-medium bg-[#0A65CC] text-white transition-colors hover:bg-[#085BBA] cursor-pointer"
-          >
-            <MessageSquare class="w-4 h-4" />
-            Отправить сообщение
-          </button>
+          <div class="flex-1">
+            <ProfileInfo
+              :description="description"
+              :isEditable="isOwnProfile"
+              @update:description="description = $event"
+            />
+          </div>
 
-          <div class="mt-4 bg-[#F9F9F9] rounded-lg p-4 border border-[#E5E9F2]">
-            <div class="flex items-center gap-2 mb-2">
-              <CheckIcon class="w-4 h-4 text-[#4CAF50]" />
-              <p class="text-sm font-medium text-[#222222]">
-                {{ stats.ordersCompleted }} заказов выполнено
-              </p>
-            </div>
-            <div class="flex items-center gap-2 mb-2">
-              <Award class="w-4 h-4 text-[#FFB800]" />
-              <p class="text-sm font-medium text-[#222222]">
-                {{ stats.reviewsReceived }} отзывов получено
-              </p>
-            </div>
-            <div class="flex items-center gap-2">
-              <CheckIcon class="w-4 h-4 text-[#4CAF50]" />
-              <p class="text-sm font-medium text-[#222222]">
-                {{ stats.successRate }}% заказов успешно сдано
-              </p>
+          <div class="min-w-[200px]">
+            <button
+              v-if="!isOwnProfile"
+              @click="handleSendMessage"
+              class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm rounded-md font-medium bg-[#0A65CC] text-white transition-colors hover:bg-[#085BBA] cursor-pointer"
+            >
+              <MessageSquare class="w-4 h-4" />
+              Отправить сообщение
+            </button>
+
+            <div class="mt-4 bg-[#F9F9F9] rounded-lg p-4 border border-[#E5E9F2]">
+              <div class="flex items-center gap-2 mb-2">
+                <CheckIcon class="w-4 h-4 text-[#4CAF50]" />
+                <p class="text-sm font-medium text-[#222222]">
+                  {{ stats.ordersCompleted }} заказов выполнено
+                </p>
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <Award class="w-4 h-4 text-[#FFB800]" />
+                <p class="text-sm font-medium text-[#222222]">
+                  {{ stats.reviewsReceived }} отзывов получено
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <CheckIcon class="w-4 h-4 text-[#4CAF50]" />
+                <p class="text-sm font-medium text-[#222222]">
+                  {{ stats.successRate }}% заказов успешно сдано
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Навыки -->
-    <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 mb-6 shadow-sm">
-      <SkillsList :skills="skills" :isEditable="isOwnProfile" @update:skills="skills = $event" />
-    </div>
+      <!-- Навыки -->
+      <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 mb-6 shadow-sm">
+        <SkillsList :skills="skills" :isEditable="isOwnProfile" @update:skills="skills = $event" />
+      </div>
 
-    <!-- Портфолио -->
-    <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 mb-6 shadow-sm">
-      <PortfolioGallery
-        :projects="projects"
-        :isEditable="isOwnProfile"
-        :userId="currentUserId"
-        @update:projects="projects = $event"
-      />
-    </div>
+      <!-- Портфолио -->
+      <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 mb-6 shadow-sm">
+        <PortfolioGallery
+          :projects="projects"
+          :isEditable="isOwnProfile"
+          :userId="currentUserId"
+          @update:projects="projects = $event"
+        />
+      </div>
 
-    <!-- Отзывы -->
-    <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 shadow-sm">
-      <ReviewList
-        :reviews="reviews"
-        :averageRating="averageRating"
-        :profileId="currentUserId"
-        :projects="projects"
-        v-model="reviewFilter"
-        @review-added="handleReviewAdded"
-        @review-response-added="handleReviewResponse"
-      />
+      <!-- Отзывы -->
+      <div class="bg-white rounded-lg border border-[#E5E9F2] p-6 shadow-sm">
+        <ReviewList
+          :reviews="reviews"
+          :averageRating="averageRating"
+          :profileId="currentUserId"
+          :projects="projects"
+          v-model="reviewFilter"
+          @review-added="handleReviewAdded"
+          @review-response-added="handleReviewResponse"
+        />
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Стилизация скроллбара */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Анимация для загрузки */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+</style>

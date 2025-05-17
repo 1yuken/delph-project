@@ -129,3 +129,21 @@ const saveDescription = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+textarea {
+  resize: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+textarea::placeholder {
+  color: #a0a0a0;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+</style>
