@@ -13,6 +13,7 @@ import { PortfoliosModule } from './portfolios/portfolios.module';
 import { ItemsModule } from './items/items.module';
 import { OrdersModule } from './orders/orders.module';
 import { FinancesModule } from './finances/finances.module';
+import { SeedsModule } from './seeds/seeds.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { FinancesModule } from './finances/finances.module';
     ItemsModule,
     OrdersModule,
     FinancesModule,
+    SeedsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
