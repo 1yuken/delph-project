@@ -58,7 +58,7 @@ export class UsersService {
 
   findAllFreelancers() {
     return this.usersRepository.find({
-      where: { isActive: true, isFreelancer: true },
+      where: { isActive: true },
       select: [
         'id',
         'username',
